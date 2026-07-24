@@ -33,6 +33,7 @@
     "@turf/turf": "^7.3.5",
     "d3-contour": "^4.0.2",
     "idb-keyval": "^6.3.0",
+    "jspdf": "^4.2.1",
     "maplibre-gl": "^6.0.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",

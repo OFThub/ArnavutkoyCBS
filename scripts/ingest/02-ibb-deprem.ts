@@ -1,4 +1,4 @@
-// İBB deprem senaryosu CSV'sini (Windows-1254, ';') indirip Arnavutköy'ün 39 mahallesini UAVT koduyla yazar.
+// İBB deprem senaryosu CSV'sini (Windows-1254, ';') indirip Arnavutköy'ün 38 mahallesini UAVT koduyla yazar.
 
 import { fetchBuffer } from './lib/http'
 import { pickResource, resolvePackage } from './lib/ckan'

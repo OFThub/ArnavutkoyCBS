@@ -14,6 +14,7 @@ export const BASEMAPS = {
     kind: 'raster',
     url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
     attribution: '© Esri, Maxar, Earthstar Geographics',
+    maxZoom: 19,
   },
   openTopoMap: {
     id: 'openTopoMap',
@@ -21,6 +22,7 @@ export const BASEMAPS = {
     kind: 'raster',
     url: 'https://tile.opentopomap.org/{z}/{x}/{y}.png',
     attribution: '© OpenTopoMap (CC-BY-SA)',
+    maxZoom: 17,
   },
 } as const
 

@@ -29,7 +29,7 @@ Tek tek çalıştırmak için:
 
 ```bash
 npm run data:district   # ilçe sınırı (Nominatim)
-npm run data:deprem     # İBB deprem senaryosu (39 mahalle + UAVT)
+npm run data:deprem     # İBB deprem senaryosu (38 mahalle + UAVT)
 npm run data:mahalle    # mahalle sınırı (geokod → Voronoi, YAKLAŞIK)
 npm run data:acilyol    # İBB acil ulaşım yolları
 npm run data:saglik     # İBB sağlık kurumları
