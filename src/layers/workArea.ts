@@ -4,10 +4,18 @@ import type { FeatureCollection } from 'geojson'
 import { loadDataset } from '../core/dataset'
 import { firstAreaFeature, maskCollection } from '../core/mask'
 import type { LayerModule } from '../core/types'
-import { setLayersVisible, upsertGeoJsonSource, upsertLayer } from '../map/overlays'
+import {
+  OVERLAY_ORDER,
+  keepOnTop,
+  setLayersVisible,
+  upsertGeoJsonSource,
+  upsertLayer,
+} from '../map/overlays'
 
 const SOURCE_ID = 'calisma-alani-maske-kaynak'
 const FILL_LAYER = 'calisma-alani-maske-dolgu'
+
+keepOnTop(FILL_LAYER)
 
 let maskPromise: Promise<FeatureCollection> | null = null
 
@@ -30,6 +38,7 @@ export const workAreaMaskLayer: LayerModule = {
   title: 'Çalışma alanı dışı maskesi',
   group: 'altlik',
   access: 'public',
+  order: OVERLAY_ORDER.mask,
 
   async register(map) {
     upsertGeoJsonSource(map, SOURCE_ID, await maskData())
@@ -37,7 +46,7 @@ export const workAreaMaskLayer: LayerModule = {
       id: FILL_LAYER,
       type: 'fill',
       source: SOURCE_ID,
-      paint: { 'fill-color': '#05080f', 'fill-opacity': 0.92 },
+      paint: { 'fill-color': '#05080f', 'fill-opacity': 1 },
     })
   },
 

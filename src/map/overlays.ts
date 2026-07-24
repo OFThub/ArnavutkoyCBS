@@ -23,6 +23,7 @@ export const OVERLAY_ORDER = {
   data: 50,
   analysis: 70,
   tool: 90,
+  mask: 200,
 } as const
 
 export function upsertGeoJsonSource(map: MapLibreMap, id: string, data: GeoJSON): void {
@@ -34,10 +35,23 @@ export function upsertGeoJsonSource(map: MapLibreMap, id: string, data: GeoJSON)
   map.addSource(id, { type: 'geojson', data })
 }
 
+const topLayers = new Set<string>()
+
+export function keepOnTop(layerId: string): void {
+  topLayers.add(layerId)
+}
+
+function topmostExisting(map: MapLibreMap, exclude: string): string | undefined {
+  for (const id of topLayers) {
+    if (id !== exclude && map.getLayer(id)) return id
+  }
+  return undefined
+}
+
 export function upsertLayer(map: MapLibreMap, layer: AddLayerObject, beforeId?: string): void {
   if (map.getLayer(layer.id)) return
-  const before = beforeId && map.getLayer(beforeId) ? beforeId : undefined
-  map.addLayer(layer, before)
+  const explicit = beforeId && map.getLayer(beforeId) ? beforeId : undefined
+  map.addLayer(layer, explicit ?? topmostExisting(map, layer.id))
 }
 
 export function removeLayers(map: MapLibreMap, ids: string[]): void {

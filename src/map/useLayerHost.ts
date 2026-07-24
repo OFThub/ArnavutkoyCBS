@@ -35,7 +35,7 @@ export function useLayerHost(): void {
         attached.current.add(module.id)
         overlays.register({
           id: `katman:${module.id}`,
-          order: OVERLAY_ORDER.data,
+          order: module.order ?? OVERLAY_ORDER.data,
           apply: async (target) => {
             try {
               await module.register(target)

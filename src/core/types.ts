@@ -60,6 +60,7 @@ export interface LayerModule {
   title: string
   group: LayerGroup
   access: Access
+  order?: number
   register(map: MapLibreMap): void | Promise<void>
   setVisible(map: MapLibreMap, visible: boolean): void
   themable?: ThemableField[]
