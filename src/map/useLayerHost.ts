@@ -14,38 +14,45 @@ export function useLayerHost(): void {
   const visibleRef = useRef(visibleLayers)
   visibleRef.current = visibleLayers
 
+  const attached = useRef(new Set<string>())
+
   useEffect(() => {
-    if (!map || !overlays || !ready) return
-    const modules = listLayers(role)
-
-    for (const module of modules) {
-      overlays.register({
-        id: `katman:${module.id}`,
-        order: OVERLAY_ORDER.data,
-        apply: async (target) => {
-          try {
-            await module.register(target)
-            module.setVisible(target, visibleRef.current.includes(module.id))
-          } catch (error) {
-            notifications.show({
-              color: 'red',
-              title: module.title,
-              message: error instanceof Error ? error.message : 'Katman yüklenemedi',
-            })
-          }
-        },
-      })
-    }
-
+    const registered = attached.current
     return () => {
-      for (const module of modules) overlays.unregister(`katman:${module.id}`)
+      for (const id of registered) overlays?.unregister(`katman:${id}`)
+      registered.clear()
     }
   }, [map, overlays, ready, role])
 
   useEffect(() => {
-    if (!map || !ready) return
+    if (!map || !overlays || !ready) return
+
     for (const module of listLayers(role)) {
-      module.setVisible(map, visibleLayers.includes(module.id))
+      const visible = visibleLayers.includes(module.id)
+
+      if (!attached.current.has(module.id)) {
+        if (!visible) continue
+        attached.current.add(module.id)
+        overlays.register({
+          id: `katman:${module.id}`,
+          order: OVERLAY_ORDER.data,
+          apply: async (target) => {
+            try {
+              await module.register(target)
+              module.setVisible(target, visibleRef.current.includes(module.id))
+            } catch (error) {
+              notifications.show({
+                color: 'red',
+                title: module.title,
+                message: error instanceof Error ? error.message : 'Katman yüklenemedi',
+              })
+            }
+          },
+        })
+        continue
+      }
+
+      module.setVisible(map, visible)
     }
-  }, [map, ready, role, visibleLayers])
+  }, [map, overlays, ready, role, visibleLayers])
 }

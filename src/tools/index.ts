@@ -5,8 +5,10 @@ import { bufferTool } from './BufferTool'
 import { coordinateTool } from './CoordinateTool'
 import { measureTool } from './MeasureTool'
 import { printTool } from './PrintTool'
+import { profileTool } from './ProfileTool'
 import { shareTool } from './ShareTool'
 import { sketchTool } from './SketchTool'
+import { terrainTool } from './TerrainTool'
 import { workspaceTool } from './WorkspaceTool'
 import type { ToolModule } from './types'
 
@@ -14,6 +16,8 @@ const tools: ToolModule[] = [
   measureTool,
   bufferTool,
   sketchTool,
+  terrainTool,
+  profileTool,
   coordinateTool,
   shareTool,
   workspaceTool,

@@ -6,7 +6,7 @@ import { notifications } from '@mantine/notifications'
 import { DISTRICT } from '../config/district'
 import { dataVersion } from '../core/dataset'
 import { useMapContext } from '../map/mapContext'
-import { exportMapPdf, type PrintOrientation } from './print'
+import type { PrintOrientation } from './print'
 import type { ToolModule } from './types'
 
 function PrintPanel() {
@@ -19,6 +19,7 @@ function PrintPanel() {
     if (!map || !ready) return
     setBusy(true)
     try {
+      const { exportMapPdf } = await import('./print')
       const fileName = await exportMapPdf(map, {
         title: title.trim() || DISTRICT.name,
         orientation,

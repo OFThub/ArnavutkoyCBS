@@ -87,7 +87,7 @@ export function startDrawSession(
       })
     })
     data = { type: 'FeatureCollection', features }
-    if (map.isStyleLoaded()) upsertGeoJsonSource(map, SOURCE_ID, data)
+    if (map.getSource(SOURCE_ID)) upsertGeoJsonSource(map, SOURCE_ID, data)
     if (notify) options.onChange?.(resultFeature(), vertices.length)
   }
 

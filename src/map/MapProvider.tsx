@@ -60,6 +60,10 @@ export function MapProvider({ children }: { children: ReactNode }) {
 
     const overlays = createOverlayManager(map)
 
+    if (import.meta.env.DEV) {
+      ;(window as unknown as { harita?: MapLibreMap }).harita = map
+    }
+
     const onLoad = (): void => {
       if (!restored) map.fitBounds(DISTRICT_BOUNDS, { padding: 32, duration: 0 })
       setContext({ map, overlays, ready: true })

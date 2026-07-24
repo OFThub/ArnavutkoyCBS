@@ -29,5 +29,18 @@ export default defineConfig({
   build: {
     target: 'es2022',
     sourcemap: true,
+    chunkSizeWarningLimit: 1000,
+    rolldownOptions: {
+      output: {
+        codeSplitting: {
+          groups: [
+            { name: 'maplibre', test: /[\\/]node_modules[\\/]maplibre-gl[\\/]/ },
+            { name: 'turf', test: /[\\/]node_modules[\\/]@turf[\\/]/ },
+            { name: 'mantine', test: /[\\/]node_modules[\\/]@mantine[\\/](core|hooks|notifications)[\\/]/ },
+            { name: 'react', test: /[\\/]node_modules[\\/](react|react-dom|scheduler)[\\/]/ },
+          ],
+        },
+      },
+    },
   },
 })

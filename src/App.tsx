@@ -8,6 +8,7 @@ import { MapProvider } from './map/MapProvider'
 import { useLayerHost } from './map/useLayerHost'
 import { useMapStateSync } from './map/useMapStateSync'
 import { useSketchOverlay } from './map/useSketchOverlay'
+import { useTerrainSync } from './map/useTerrainSync'
 import { BasemapSwitcher } from './panels/BasemapSwitcher'
 import { LayerPanel } from './panels/LayerPanel'
 import { StatusBar } from './panels/StatusBar'
@@ -24,6 +25,7 @@ function Workbench() {
   useLayerHost()
   useMapStateSync()
   useSketchOverlay()
+  useTerrainSync()
 
   return (
     <AppShell

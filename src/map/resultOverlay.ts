@@ -72,11 +72,11 @@ export function createResultOverlay(
   return {
     setData(next) {
       data = next
-      if (map.isStyleLoaded()) upsertGeoJsonSource(map, id, data)
+      if (map.getSource(id)) upsertGeoJsonSource(map, id, data)
     },
     clear() {
       data = EMPTY
-      if (map.isStyleLoaded()) upsertGeoJsonSource(map, id, data)
+      if (map.getSource(id)) upsertGeoJsonSource(map, id, data)
     },
     destroy() {
       overlays.unregister(id)

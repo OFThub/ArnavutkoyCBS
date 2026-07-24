@@ -19,7 +19,7 @@ export const DISTRICT: DistrictConfig = {
   bbox: [28.4893, 41.0886, 28.8214, 41.4081],
   center: [28.6554, 41.2484],
   defaultZoom: 11,
-  referenceElevationM: 160,
+  referenceElevationM: 74,
   elevationToleranceM: 25,
   mahalleCount: 38,
 }

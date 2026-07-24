@@ -35,3 +35,18 @@ export function formatScaleLabel(metersPerPixel: number, pixels: number): string
 export function metersPerPixel(latitude: number, zoom: number): number {
   return (40075016.686 * Math.cos((latitude * Math.PI) / 180)) / (512 * 2 ** zoom)
 }
+
+export interface ScaleBar {
+  meters: number
+  millimeters: number
+}
+
+export function niceScaleBar(metersPerMm: number, targetMm: number): ScaleBar {
+  if (!(metersPerMm > 0) || !(targetMm > 0)) return { meters: 0, millimeters: 0 }
+  const raw = metersPerMm * targetMm
+  const magnitude = 10 ** Math.floor(Math.log10(raw))
+  const normalized = raw / magnitude
+  const step = normalized >= 5 ? 5 : normalized >= 2 ? 2 : 1
+  const meters = step * magnitude
+  return { meters, millimeters: meters / metersPerMm }
+}

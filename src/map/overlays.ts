@@ -62,16 +62,30 @@ export function createOverlayManager(map: MapLibreMap): OverlayManager {
   const overlays = new Map<string, MapOverlay & { seq: number }>()
   let counter = 0
   let destroyed = false
+  let styleReady = map.isStyleLoaded()
+
+  const runApply = (overlay: MapOverlay): void => {
+    try {
+      void Promise.resolve(overlay.apply(map)).catch((error: unknown) => {
+        console.error(`Overlay uygulanamadı: ${overlay.id}`, error)
+      })
+    } catch (error) {
+      console.error(`Overlay uygulanamadı: ${overlay.id}`, error)
+    }
+  }
 
   const applyAll = (): void => {
     if (destroyed) return
     const ordered = [...overlays.values()].sort(
       (a, b) => (a.order ?? OVERLAY_ORDER.data) - (b.order ?? OVERLAY_ORDER.data) || a.seq - b.seq,
     )
-    for (const overlay of ordered) void overlay.apply(map)
+    for (const overlay of ordered) runApply(overlay)
   }
 
-  const onStyleLoad = (): void => applyAll()
+  const onStyleLoad = (): void => {
+    styleReady = true
+    applyAll()
+  }
   map.on('style.load', onStyleLoad)
 
   return {
@@ -79,13 +93,13 @@ export function createOverlayManager(map: MapLibreMap): OverlayManager {
       counter += 1
       const entry = { ...overlay, seq: counter }
       overlays.set(overlay.id, entry)
-      if (map.isStyleLoaded()) void entry.apply(map)
+      if (styleReady) runApply(entry)
     },
     unregister(id) {
       const entry = overlays.get(id)
       if (!entry) return
       overlays.delete(id)
-      if (entry.dispose && map.isStyleLoaded()) entry.dispose(map)
+      if (entry.dispose && styleReady) entry.dispose(map)
     },
     has: (id) => overlays.has(id),
     refresh: applyAll,

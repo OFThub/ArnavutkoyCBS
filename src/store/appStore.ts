@@ -16,6 +16,9 @@ interface AppState {
   visibleLayers: string[]
   activeToolId: string | null
   activeAnalysisId: string | null
+  terrain3d: boolean
+  terrainExaggeration: number
+  contourInterval: number
   lastResult: AnalysisResult | null
   sketch: Feature[]
   setSession: (session: Session | null) => void
@@ -23,6 +26,9 @@ interface AppState {
   toggleLayer: (id: string, visible?: boolean) => void
   setVisibleLayers: (ids: string[]) => void
   setActiveTool: (id: string | null) => void
+  setTerrain3d: (enabled: boolean) => void
+  setTerrainExaggeration: (value: number) => void
+  setContourInterval: (value: number) => void
   setActiveAnalysis: (id: string | null) => void
   setResult: (result: AnalysisResult | null) => void
   setSketch: (features: Feature[]) => void
@@ -38,6 +44,9 @@ export const useAppStore = create<AppState>((set) => ({
   visibleLayers: [...DEFAULT_VISIBLE_LAYERS],
   activeToolId: null,
   activeAnalysisId: null,
+  terrain3d: false,
+  terrainExaggeration: 1.5,
+  contourInterval: 10,
   lastResult: null,
   sketch: [],
   setSession: (session) => set({ session, role: roleFromSession(session) }),
@@ -55,6 +64,9 @@ export const useAppStore = create<AppState>((set) => ({
     }),
   setVisibleLayers: (visibleLayers) => set({ visibleLayers }),
   setActiveTool: (activeToolId) => set({ activeToolId }),
+  setTerrain3d: (terrain3d) => set({ terrain3d }),
+  setTerrainExaggeration: (terrainExaggeration) => set({ terrainExaggeration }),
+  setContourInterval: (contourInterval) => set({ contourInterval }),
   setActiveAnalysis: (activeAnalysisId) => set({ activeAnalysisId }),
   setResult: (lastResult) => set({ lastResult }),
   setSketch: (sketch) => set({ sketch }),
