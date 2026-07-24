@@ -6,6 +6,9 @@ import { BASEMAPS, type BasemapId } from '../config/sources'
 export const BASEMAP_SOURCE_ID = 'altlik'
 export const BASEMAP_LAYER_ID = 'altlik-raster'
 
+export const GLYPHS_URL = 'https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf'
+export const LABEL_FONT = ['Noto Sans Regular']
+
 export const BASEMAP_LIST = Object.values(BASEMAPS)
 
 export function basemapStyle(id: BasemapId): string | StyleSpecification {
@@ -14,6 +17,7 @@ export function basemapStyle(id: BasemapId): string | StyleSpecification {
 
   return {
     version: 8,
+    glyphs: GLYPHS_URL,
     sources: {
       [BASEMAP_SOURCE_ID]: {
         type: 'raster',
