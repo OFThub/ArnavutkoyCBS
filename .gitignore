@@ -1,0 +1,15 @@
+node_modules
+dist
+dist-ssr
+coverage
+.vite
+*.local
+.env
+.env.*
+!.env.example
+.DS_Store
+Thumbs.db
+.remember/logs
+.remember/tmp
+data/raw
+supabase/.temp

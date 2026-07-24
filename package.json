@@ -1,0 +1,58 @@
+{
+  "name": "arnavutkoy-cbs",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc -b",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "db:push": "supabase db push",
+    "db:reset": "supabase db reset",
+    "db:diff": "supabase db diff",
+    "data:build": "tsx scripts/ingest/index.ts",
+    "data:district": "tsx scripts/ingest/01-district.ts",
+    "data:deprem": "tsx scripts/ingest/02-ibb-deprem.ts",
+    "data:mahalle": "tsx scripts/ingest/03-mahalle-geom.ts",
+    "data:acilyol": "tsx scripts/ingest/04-ibb-acil-yol.ts",
+    "data:saglik": "tsx scripts/ingest/05-ibb-saglik.ts",
+    "data:osm": "tsx scripts/ingest/06-osm-snapshot.ts"
+  },
+  "dependencies": {
+    "@mantine/charts": "^8.3.14",
+    "@mantine/core": "^8.3.14",
+    "@mantine/hooks": "^8.3.14",
+    "@mantine/notifications": "^8.3.14",
+    "@supabase/supabase-js": "^2.95.3",
+    "@turf/turf": "^7.3.5",
+    "d3-contour": "^4.0.2",
+    "idb-keyval": "^6.3.0",
+    "maplibre-gl": "^6.0.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "recharts": "^3.3.1",
+    "zustand": "^5.0.14"
+  },
+  "devDependencies": {
+    "@types/d3-contour": "^3.0.6",
+    "@types/geojson": "^7946.0.16",
+    "@types/node": "^24.10.1",
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^5.1.1",
+    "iconv-lite": "^0.7.0",
+    "supabase": "^2.109.1",
+    "tsx": "^4.20.7",
+    "typescript": "^5.9.3",
+    "vite": "^8.1.5",
+    "vitest": "^4.0.18",
+    "xlsx": "^0.18.5",
+    "zod": "^4.3.12"
+  }
+}
