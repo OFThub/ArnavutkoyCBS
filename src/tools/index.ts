@@ -3,6 +3,7 @@
 import { registerTools } from './registry'
 import { bufferTool } from './BufferTool'
 import { coordinateTool } from './CoordinateTool'
+import { inspectorTool } from './InspectorTool'
 import { measureTool } from './MeasureTool'
 import { printTool } from './PrintTool'
 import { profileTool } from './ProfileTool'
@@ -13,6 +14,7 @@ import { workspaceTool } from './WorkspaceTool'
 import type { ToolModule } from './types'
 
 const tools: ToolModule[] = [
+  inspectorTool,
   measureTool,
   bufferTool,
   sketchTool,

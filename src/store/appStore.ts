@@ -17,6 +17,7 @@ interface AppState {
   activeToolId: string | null
   activeAnalysisId: string | null
   terrain3d: boolean
+  building3d: boolean
   terrainExaggeration: number
   contourInterval: number
   lastResult: AnalysisResult | null
@@ -27,6 +28,7 @@ interface AppState {
   setVisibleLayers: (ids: string[]) => void
   setActiveTool: (id: string | null) => void
   setTerrain3d: (enabled: boolean) => void
+  setBuilding3d: (enabled: boolean) => void
   setTerrainExaggeration: (value: number) => void
   setContourInterval: (value: number) => void
   setActiveAnalysis: (id: string | null) => void
@@ -45,6 +47,7 @@ export const useAppStore = create<AppState>((set) => ({
   activeToolId: null,
   activeAnalysisId: null,
   terrain3d: false,
+  building3d: false,
   terrainExaggeration: 1.5,
   contourInterval: 10,
   lastResult: null,
@@ -65,6 +68,7 @@ export const useAppStore = create<AppState>((set) => ({
   setVisibleLayers: (visibleLayers) => set({ visibleLayers }),
   setActiveTool: (activeToolId) => set({ activeToolId }),
   setTerrain3d: (terrain3d) => set({ terrain3d }),
+  setBuilding3d: (building3d) => set({ building3d }),
   setTerrainExaggeration: (terrainExaggeration) => set({ terrainExaggeration }),
   setContourInterval: (contourInterval) => set({ contourInterval }),
   setActiveAnalysis: (activeAnalysisId) => set({ activeAnalysisId }),
