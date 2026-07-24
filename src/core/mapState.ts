@@ -48,7 +48,11 @@ export function decodeMapState(hash: string): MapState | null {
   const pieces = view.split('/')
   if (pieces.length !== 5) return null
 
-  const [zoom, lat, lng, bearing, pitch] = pieces.map(Number)
+  const zoom = Number(pieces[0])
+  const lat = Number(pieces[1])
+  const lng = Number(pieces[2])
+  const bearing = Number(pieces[3])
+  const pitch = Number(pieces[4])
   if (![zoom, lat, lng, bearing, pitch].every(Number.isFinite)) return null
   if (Math.abs(lat) > 90 || Math.abs(lng) > 180) return null
 

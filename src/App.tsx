@@ -1,103 +1,79 @@
-// Uygulama kabuğu ve Faz 0 hazırlık göstergesi; harita katmanı Faz 1'de bu kabuğun içine yerleşir.
+// Uygulama kabuğu: harita sağlayıcısını, katman/araç panellerini ve durum çubuğunu bir araya getirir.
 
-import { useEffect, useState } from 'react'
-import { AppShell, Badge, Card, Container, Group, List, Stack, Text, Title } from '@mantine/core'
+import { AppShell, Badge, Box, Burger, Divider, Group, ScrollArea, Stack, Title } from '@mantine/core'
+import { useDisclosure } from '@mantine/hooks'
 import { DISTRICT } from './config/district'
-import { loadManifest, type DataManifest } from './core/dataset'
-import { isBackendConfigured } from './lib/supabase'
-import { listLayers } from './core/layerRegistry'
-import { listAnalyses } from './core/analysisRegistry'
+import { MapCanvas } from './map/MapCanvas'
+import { MapProvider } from './map/MapProvider'
+import { useLayerHost } from './map/useLayerHost'
+import { useMapStateSync } from './map/useMapStateSync'
+import { useSketchOverlay } from './map/useSketchOverlay'
+import { BasemapSwitcher } from './panels/BasemapSwitcher'
+import { LayerPanel } from './panels/LayerPanel'
+import { StatusBar } from './panels/StatusBar'
+import { ToolDock } from './panels/ToolDock'
 import { useAppStore } from './store/appStore'
 
-export default function App() {
+const MAP_HEIGHT =
+  'calc(100dvh - var(--app-shell-header-height) - var(--app-shell-footer-height))'
+
+function Workbench() {
+  const [opened, { toggle }] = useDisclosure(true)
   const role = useAppStore((state) => state.role)
-  const [manifest, setManifest] = useState<DataManifest | null>(null)
-  const [checked, setChecked] = useState(false)
 
-  useEffect(() => {
-    let alive = true
-    void loadManifest().then((value) => {
-      if (!alive) return
-      setManifest(value)
-      setChecked(true)
-    })
-    return () => {
-      alive = false
-    }
-  }, [])
-
-  const backendReady = isBackendConfigured()
-  const dataReady = manifest !== null
-  const layerCount = listLayers(role).length
-  const analysisCount = listAnalyses(role).length
+  useLayerHost()
+  useMapStateSync()
+  useSketchOverlay()
 
   return (
-    <AppShell header={{ height: 56 }} padding="md">
+    <AppShell
+      header={{ height: 56 }}
+      navbar={{ width: 320, breakpoint: 'sm', collapsed: { mobile: !opened, desktop: !opened } }}
+      footer={{ height: 30 }}
+      padding={0}
+    >
       <AppShell.Header>
-        <Group h="100%" px="md" justify="space-between">
-          <Group gap="xs">
+        <Group h="100%" px="md" justify="space-between" wrap="nowrap">
+          <Group gap="xs" wrap="nowrap">
+            <Burger opened={opened} onClick={toggle} size="sm" />
             <Title order={4}>{DISTRICT.name} CBS</Title>
-            <Badge variant="light">{DISTRICT.province}</Badge>
+            <Badge variant="light" visibleFrom="sm">
+              {DISTRICT.province}
+            </Badge>
           </Group>
           <Badge variant={role === 'public' ? 'default' : 'filled'}>{role}</Badge>
         </Group>
       </AppShell.Header>
 
-      <AppShell.Main>
-        <Container size="sm">
+      <AppShell.Navbar p="sm">
+        <ScrollArea type="auto">
           <Stack gap="md">
-            <Card withBorder radius="md" padding="lg">
-              <Stack gap="sm">
-                <Title order={5}>Faz 0 — Temel</Title>
-                <Text size="sm" c="dimmed">
-                  Proje iskeleti, veri hattı ve veritabanı şeması hazırlanıyor. Harita Faz 1'de
-                  devreye girer.
-                </Text>
-                <List size="sm" spacing="xs">
-                  <List.Item>
-                    <Group gap="xs">
-                      <Badge color={dataReady ? 'teal' : 'gray'} variant="light">
-                        {checked ? (dataReady ? 'hazır' : 'yok') : 'kontrol'}
-                      </Badge>
-                      <Text size="sm">
-                        Veri seti{' '}
-                        {manifest ? `sürüm ${manifest.version}` : '— npm run data:build çalıştırın'}
-                      </Text>
-                    </Group>
-                  </List.Item>
-                  <List.Item>
-                    <Group gap="xs">
-                      <Badge color={backendReady ? 'teal' : 'gray'} variant="light">
-                        {backendReady ? 'hazır' : 'yok'}
-                      </Badge>
-                      <Text size="sm">
-                        Supabase {backendReady ? 'bağlı' : '— .env dosyasını doldurun'}
-                      </Text>
-                    </Group>
-                  </List.Item>
-                  <List.Item>
-                    <Text size="sm">
-                      Kayıtlı katman: {layerCount} · Kayıtlı analiz: {analysisCount}
-                    </Text>
-                  </List.Item>
-                </List>
-              </Stack>
-            </Card>
-
-            <Card withBorder radius="md" padding="lg">
-              <Stack gap="xs">
-                <Title order={6}>İlçe referansları</Title>
-                <Text size="sm">OSM relation: {DISTRICT.osmRelationId}</Text>
-                <Text size="sm">bbox: {DISTRICT.bbox.join(', ')}</Text>
-                <Text size="sm">
-                  Mahalle sayısı: {DISTRICT.mahalleCount} · Merkez yükselti referansı:{' '}
-                  {DISTRICT.referenceElevationM} m
-                </Text>
-              </Stack>
-            </Card>
+            <BasemapSwitcher />
+            <Divider label="Katmanlar" labelPosition="left" />
+            <LayerPanel />
+            <Divider label="Araçlar" labelPosition="left" />
+            <ToolDock />
           </Stack>
-        </Container>
+        </ScrollArea>
+      </AppShell.Navbar>
+
+      <AppShell.Main>
+        <Box h={MAP_HEIGHT}>
+          <MapCanvas />
+        </Box>
       </AppShell.Main>
+
+      <AppShell.Footer>
+        <StatusBar />
+      </AppShell.Footer>
     </AppShell>
+  )
+}
+
+export default function App() {
+  return (
+    <MapProvider>
+      <Workbench />
+    </MapProvider>
   )
 }

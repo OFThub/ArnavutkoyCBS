@@ -7,8 +7,20 @@ import type { Role } from '../core/types'
 const url = import.meta.env.VITE_SUPABASE_URL
 const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
+function isUsable(value: string | undefined): value is string {
+  return typeof value === 'string' && value.length > 0 && !/[<>]/.test(value)
+}
+
+function isHttpUrl(value: string): boolean {
+  try {
+    return new URL(value).protocol.startsWith('http')
+  } catch {
+    return false
+  }
+}
+
 export const supabase: SupabaseClient | null =
-  url && anonKey
+  isUsable(url) && isHttpUrl(url) && isUsable(anonKey)
     ? createClient(url, anonKey, {
         auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
       })

@@ -28,11 +28,12 @@ export function parseCoordinate(input: string): LngLatTuple | null {
 
   const marks: { axis: Axis; sign: 1 | -1; at: number }[] = []
   for (let index = 0; index < upper.length; index += 1) {
-    const found = HEMISPHERE[upper[index]]
+    const letter = upper[index]
+    const found = letter ? HEMISPHERE[letter] : undefined
     if (found) marks.push({ ...found, at: index })
   }
   if (marks.length > 2) return null
-  if (marks.length === 2 && marks[0].axis === marks[1].axis) return null
+  if (marks.length === 2 && marks[0]?.axis === marks[1]?.axis) return null
 
   const cleaned = upper.replace(/[NSEWKGDB]/g, ' ').replace(/[°'"′″]/g, ' ')
   const numbers = cleaned.match(/-?\d+(?:\.\d+)?/g)?.map(Number) ?? []
@@ -41,14 +42,14 @@ export function parseCoordinate(input: string): LngLatTuple | null {
   const perValue = numbers.length / 2
   const first = sexagesimal(numbers.slice(0, perValue).map(Math.abs))
   const second = sexagesimal(numbers.slice(perValue).map(Math.abs))
-  const firstNegative = numbers[0] < 0
-  const secondNegative = numbers[perValue] < 0
+  const firstNegative = (numbers[0] ?? 0) < 0
+  const secondNegative = (numbers[perValue] ?? 0) < 0
 
-  let firstAxis: Axis = 'lat'
-  if (marks.length > 0) {
-    const leading = marks.reduce((min, mark) => (mark.at < min.at ? mark : min))
-    firstAxis = leading.axis
-  }
+  const leading = marks.reduce<{ axis: Axis; at: number } | null>(
+    (best, mark) => (best === null || mark.at < best.at ? mark : best),
+    null,
+  )
+  const firstAxis: Axis = leading?.axis ?? 'lat'
 
   const signFor = (axis: Axis, negative: boolean): 1 | -1 => {
     const mark = marks.find((candidate) => candidate.axis === axis)

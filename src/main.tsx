@@ -9,6 +9,7 @@ import '@mantine/notifications/styles.css'
 import App from './App'
 import { installLayers } from './layers'
 import { installAnalyses } from './analysis'
+import { installTools } from './tools'
 import { currentSession, onAuthChange } from './lib/supabase'
 import { useAppStore } from './store/appStore'
 
@@ -20,6 +21,7 @@ const theme = createTheme({
 
 installLayers()
 installAnalyses()
+installTools()
 
 void currentSession()
   .then((session) => useAppStore.getState().setSession(session))
