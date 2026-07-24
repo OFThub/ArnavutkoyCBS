@@ -7,7 +7,12 @@ import type { BasemapId } from '../config/sources'
 import type { AnalysisResult, Role } from '../core/types'
 import { roleFromSession } from '../lib/supabase'
 
-export const DEFAULT_VISIBLE_LAYERS = ['ilce-sinir', 'ilce-maske']
+export const DEFAULT_VISIBLE_LAYERS = [
+  'calisma-alani-maske',
+  'komsu-ilceler',
+  'ilce-maske',
+  'ilce-sinir',
+]
 
 interface AppState {
   role: Role

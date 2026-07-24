@@ -49,6 +49,8 @@ export const DATASETS = {
   acilUlasimYolu: '/data/acil-ulasim-yolu.geojson',
   saglikKurumu: '/data/saglik-kurumu.geojson',
   osmSnapshot: '/data/osm-snapshot.geojson',
+  ilceler: '/data/ilceler.geojson',
+  calismaAlani: '/data/calisma-alani.geojson',
 } as const
 
 export type DatasetKey = keyof typeof DATASETS

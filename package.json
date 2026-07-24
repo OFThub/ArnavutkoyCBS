@@ -22,7 +22,8 @@
     "data:mahalle": "tsx scripts/ingest/03-mahalle-geom.ts",
     "data:acilyol": "tsx scripts/ingest/04-ibb-acil-yol.ts",
     "data:saglik": "tsx scripts/ingest/05-ibb-saglik.ts",
-    "data:osm": "tsx scripts/ingest/06-osm-snapshot.ts"
+    "data:osm": "tsx scripts/ingest/06-osm-snapshot.ts",
+    "data:ilceler": "tsx scripts/ingest/07-komsu-ilceler.ts"
   },
   "dependencies": {
     "@mantine/charts": "^8.3.14",

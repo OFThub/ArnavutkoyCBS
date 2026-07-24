@@ -7,6 +7,8 @@ import { buildingsLayer } from './buildings'
 import { contourLayer } from './contour'
 import { districtBoundaryLayer } from './districtBoundary'
 import { districtMaskLayer } from './districtMask'
+import { neighborDistrictsLayer } from './neighborDistricts'
+import { workAreaMaskLayer } from './workArea'
 import { healthFacilitiesLayer } from './healthFacilities'
 import { hillshadeLayer } from './hillshade'
 import { hypsometricLayer } from './hypsometric'
@@ -17,6 +19,7 @@ import { terrainClassLayer } from './terrainClass'
 import { waterLayer } from './water'
 
 const layers: LayerModule[] = [
+  workAreaMaskLayer,
   districtMaskLayer,
   hypsometricLayer,
   slopeLayer,
@@ -29,6 +32,7 @@ const layers: LayerModule[] = [
   roadsLayer,
   poiLayer,
   healthFacilitiesLayer,
+  neighborDistrictsLayer,
   districtBoundaryLayer,
 ]
 

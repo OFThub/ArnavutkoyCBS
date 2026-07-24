@@ -32,7 +32,7 @@ export const districtMaskLayer: LayerModule = {
       id: FILL_LAYER,
       type: 'fill',
       source: SOURCE_ID,
-      paint: { 'fill-color': '#0b1120', 'fill-opacity': 0.55 },
+      paint: { 'fill-color': '#0b1120', 'fill-opacity': 0.35 },
     })
   },
 

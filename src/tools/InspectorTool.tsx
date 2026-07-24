@@ -18,6 +18,14 @@ import { formatDecimal } from '../core/coords'
 import { ASPECT_SECTORS, TERRAIN_CLASSES, aspectSector } from '../core/terrain'
 import { findMahalle, type MahalleInfo } from '../data/mahalleIndex'
 import { loadOsmSnapshot, osmKey, type SnapshotCounts } from '../data/osmSnapshot'
+import {
+  accessMessage,
+  fetchAttachments,
+  fetchAuditTrail,
+  type Attachment,
+  type AuditEntry,
+  type RecordAccess,
+} from '../data/records'
 import { loadTerrainDerived, terrainSampleAt, type TerrainSample } from '../data/terrainDerived'
 import { BUILDING_EXTRUDE_LAYER, BUILDING_FILL_LAYER } from '../layers/buildings'
 import { poiCategoryOf } from '../layers/poi'
@@ -38,6 +46,10 @@ const QUERY_LAYERS = [
 
 const HIDDEN_KEYS = new Set(['tema', 'source', 'osm_type', 'osm_id'])
 
+function dbEntityFor(layerId: string): string | null {
+  return layerId.startsWith('bina') ? 'bina' : null
+}
+
 interface Picked {
   lng: number
   lat: number
@@ -45,6 +57,13 @@ interface Picked {
   kind: string
   attributes: [string, string][]
   enriched: boolean
+  entity: string | null
+  recordId: string | null
+}
+
+interface ServerRecord {
+  history: { access: RecordAccess; entries: AuditEntry[] }
+  attachments: { access: RecordAccess; items: Attachment[] }
 }
 
 function labelFor(feature: MapGeoJSONFeature): { title: string; kind: string } {
@@ -84,6 +103,8 @@ function InspectorPanel() {
   const [terrain, setTerrain] = useState<TerrainSample | null>(null)
   const [mahalle, setMahalle] = useState<MahalleInfo | null>(null)
   const [counts, setCounts] = useState<SnapshotCounts | null>(null)
+  const [server, setServer] = useState<ServerRecord | null>(null)
+  const role = useAppStore((state) => state.role)
   const [error, setError] = useState<string | null>(null)
   const building3d = useAppStore((state) => state.building3d)
   const setBuilding3d = useAppStore((state) => state.setBuilding3d)
@@ -124,9 +145,40 @@ function InspectorPanel() {
               }
             }
 
-            setPicked({ lng, lat, title, kind, attributes: toRows(properties), enriched })
+            const entity = dbEntityFor(hit.layer.id)
+            const recordId = properties['osm_id'] ? String(properties['osm_id']) : null
+            setPicked({
+              lng,
+              lat,
+              title,
+              kind,
+              attributes: toRows(properties),
+              enriched,
+              entity,
+              recordId,
+            })
+
+            if (entity && recordId) {
+              const [history, attachments] = await Promise.all([
+                fetchAuditTrail(entity, recordId, role),
+                fetchAttachments(entity, recordId, role),
+              ])
+              setServer({ history, attachments })
+            } else {
+              setServer(null)
+            }
           } else {
-            setPicked({ lng, lat, title: 'Seçili nesne yok', kind: 'Zemin', attributes: [], enriched: false })
+            setServer(null)
+            setPicked({
+              lng,
+              lat,
+              title: 'Seçili nesne yok',
+              kind: 'Zemin',
+              attributes: [],
+              enriched: false,
+              entity: null,
+              recordId: null,
+            })
           }
 
           const derived = await loadTerrainDerived()
@@ -139,7 +191,7 @@ function InspectorPanel() {
         }
       })()
     },
-    [],
+    [role],
   )
 
   useEffect(() => {
@@ -237,6 +289,48 @@ function InspectorPanel() {
               </Table.Tbody>
             </Table>
           </ScrollArea.Autosize>
+        </>
+      ) : null}
+
+      {picked?.entity ? (
+        <>
+          <Divider label="Değişiklik geçmişi" labelPosition="left" />
+          {server && server.history.entries.length > 0 ? (
+            <Stack gap={4}>
+              {server.history.entries.map((entry) => (
+                <Group key={entry.id} justify="space-between" gap="xs" wrap="nowrap">
+                  <Text fz={10}>{entry.islem}</Text>
+                  <Text fz={10} c="dimmed">
+                    {new Date(entry.zaman).toLocaleString('tr-TR')}
+                  </Text>
+                </Group>
+              ))}
+            </Stack>
+          ) : (
+            <Text fz={10} c="dimmed">
+              {accessMessage(server?.history.access ?? 'ok', 'yönetici')}
+            </Text>
+          )}
+
+          <Divider label="Medya ekleri" labelPosition="left" />
+          {server && server.attachments.items.length > 0 ? (
+            <Stack gap={4}>
+              {server.attachments.items.map((item) => (
+                <Group key={item.id} justify="space-between" gap="xs" wrap="nowrap">
+                  <Text fz={10} truncate>
+                    {item.dosyaAdi}
+                  </Text>
+                  <Text fz={10} c="dimmed">
+                    {item.boyutBayt === null ? '—' : `${Math.round(item.boyutBayt / 1024)} KB`}
+                  </Text>
+                </Group>
+              ))}
+            </Stack>
+          ) : (
+            <Text fz={10} c="dimmed">
+              {accessMessage(server?.attachments.access ?? 'ok', 'personel')}
+            </Text>
+          )}
         </>
       ) : null}
 

@@ -10,6 +10,7 @@ import { useMapStateSync } from './map/useMapStateSync'
 import { useBuildingSync } from './map/useBuildingSync'
 import { useSketchOverlay } from './map/useSketchOverlay'
 import { useTerrainSync } from './map/useTerrainSync'
+import { useWorkAreaBounds } from './map/useWorkAreaBounds'
 import { BasemapSwitcher } from './panels/BasemapSwitcher'
 import { LayerPanel } from './panels/LayerPanel'
 import { StatusBar } from './panels/StatusBar'
@@ -28,6 +29,7 @@ function Workbench() {
   useSketchOverlay()
   useTerrainSync()
   useBuildingSync()
+  useWorkAreaBounds()
 
   return (
     <AppShell

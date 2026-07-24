@@ -9,6 +9,7 @@ import { run as mahalle } from './03-mahalle-geom'
 import { run as acilYol } from './04-ibb-acil-yol'
 import { run as saglik } from './05-ibb-saglik'
 import { run as osm } from './06-osm-snapshot'
+import { run as komsuIlceler } from './07-komsu-ilceler'
 
 interface Adim {
   id: string
@@ -23,6 +24,7 @@ const ADIMLAR: Adim[] = [
   { id: '04-ibb-acil-yol', zorunlu: false, run: acilYol },
   { id: '05-ibb-saglik', zorunlu: false, run: saglik },
   { id: '06-osm-snapshot', zorunlu: false, run: osm },
+  { id: '07-komsu-ilceler', zorunlu: false, run: komsuIlceler },
 ]
 
 export async function run(): Promise<void> {
