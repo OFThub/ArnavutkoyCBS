@@ -51,6 +51,7 @@ export const DATASETS = {
   osmSnapshot: '/data/osm-snapshot.geojson',
   ilceler: '/data/ilceler.geojson',
   calismaAlani: '/data/calisma-alani.geojson',
+  toplanmaAlani: '/data/toplanma-alani.geojson',
 } as const
 
 export type DatasetKey = keyof typeof DATASETS
