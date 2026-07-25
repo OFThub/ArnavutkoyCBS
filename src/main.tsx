@@ -8,6 +8,7 @@ import '@mantine/core/styles.css'
 import '@mantine/notifications/styles.css'
 import '@mantine/charts/styles.css'
 import App from './App'
+import { ErrorBoundary } from './core/ErrorBoundary'
 import { installLayers } from './layers'
 import { installAnalyses } from './analysis'
 import { installTools } from './tools'
@@ -37,7 +38,9 @@ createRoot(container).render(
   <StrictMode>
     <MantineProvider theme={theme} defaultColorScheme="auto">
       <Notifications position="top-right" />
-      <App />
+      <ErrorBoundary>
+        <App />
+      </ErrorBoundary>
     </MantineProvider>
   </StrictMode>,
 )

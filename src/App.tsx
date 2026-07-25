@@ -1,6 +1,6 @@
 // Uygulama kabuğu: harita sağlayıcısını, katman/araç panellerini ve durum çubuğunu bir araya getirir.
 
-import { AppShell, Badge, Box, Burger, Group, ScrollArea, Stack, Tabs, Title } from '@mantine/core'
+import { AppShell, Badge, Box, Burger, Divider, Group, ScrollArea, Stack, Tabs, Title } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
 import { DISTRICT } from './config/district'
 import { MapCanvas } from './map/MapCanvas'
@@ -11,19 +11,20 @@ import { useBuildingSync } from './map/useBuildingSync'
 import { useSketchOverlay } from './map/useSketchOverlay'
 import { useTerrainSync } from './map/useTerrainSync'
 import { useWorkAreaBounds } from './map/useWorkAreaBounds'
+import { AuthControl } from './auth/AuthControl'
 import { AnalysisDock } from './panels/AnalysisDock'
+import { DashboardPanel } from './panels/DashboardPanel'
 import { BasemapSwitcher } from './panels/BasemapSwitcher'
 import { LayerPanel } from './panels/LayerPanel'
+import { ThematicPanel } from './theming/ThematicPanel'
 import { StatusBar } from './panels/StatusBar'
 import { ToolDock } from './panels/ToolDock'
-import { useAppStore } from './store/appStore'
 
 const MAP_HEIGHT =
   'calc(100dvh - var(--app-shell-header-height) - var(--app-shell-footer-height))'
 
 function Workbench() {
   const [opened, { toggle }] = useDisclosure(true)
-  const role = useAppStore((state) => state.role)
 
   useLayerHost()
   useMapStateSync()
@@ -48,7 +49,7 @@ function Workbench() {
               {DISTRICT.province}
             </Badge>
           </Group>
-          <Badge variant={role === 'public' ? 'default' : 'filled'}>{role}</Badge>
+          <AuthControl />
         </Group>
       </AppShell.Header>
 
@@ -64,6 +65,9 @@ function Workbench() {
             <Tabs.Tab value="analiz" fz="xs">
               Analiz
             </Tabs.Tab>
+            <Tabs.Tab value="pano" fz="xs">
+              Pano
+            </Tabs.Tab>
           </Tabs.List>
 
           <ScrollArea type="auto" style={{ flex: 1 }} pt="sm">
@@ -78,6 +82,14 @@ function Workbench() {
             </Tabs.Panel>
             <Tabs.Panel value="analiz">
               <AnalysisDock />
+            </Tabs.Panel>
+            <Tabs.Panel value="pano">
+              <Stack gap="md">
+                <Divider label="Tematik harita" labelPosition="left" />
+                <ThematicPanel />
+                <Divider label="BI panosu" labelPosition="left" />
+                <DashboardPanel />
+              </Stack>
             </Tabs.Panel>
           </ScrollArea>
         </Tabs>

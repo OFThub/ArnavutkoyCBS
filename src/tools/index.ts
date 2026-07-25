@@ -6,6 +6,7 @@ import { coordinateTool } from './CoordinateTool'
 import { inspectorTool } from './InspectorTool'
 import { measureTool } from './MeasureTool'
 import { numberingTool } from './NumberingTool'
+import { panoramaTool } from './PanoramaTool'
 import { printTool } from './PrintTool'
 import { profileTool } from './ProfileTool'
 import { shareTool } from './ShareTool'
@@ -24,6 +25,7 @@ const tools: ToolModule[] = [
   coordinateTool,
   shareTool,
   numberingTool,
+  panoramaTool,
   workspaceTool,
   printTool,
 ]
