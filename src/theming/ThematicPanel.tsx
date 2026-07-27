@@ -1,7 +1,7 @@
 // Tematik harita paneli: mahalleyi seçilen göstergeye göre eşit aralık, kantil veya Jenks ile sınıflandırıp renklendirir ve lejant üretir.
 
 import { useEffect, useRef, useState } from 'react'
-import { Alert, Box, Group, NumberInput, Select, Stack, Text } from '@mantine/core'
+import { Alert, Box, Group, NumberInput, Select, Stack, Switch, Text } from '@mantine/core'
 import type { FeatureCollection, MultiPolygon, Polygon } from 'geojson'
 import {
   buildLegend,
@@ -16,6 +16,7 @@ import {
   OVERLAY_ORDER,
   removeLayers,
   removeSources,
+  setLayersVisible,
   upsertGeoJsonSource,
   upsertLayer,
 } from '../map/overlays'
@@ -38,7 +39,10 @@ export function ThematicPanel() {
   const [legend, setLegend] = useState<LegendBucket[]>([])
   const [error, setError] = useState<string | null>(null)
   const [dataReady, setDataReady] = useState(false)
+  const [enabled, setEnabled] = useState(true)
   const dataRef = useRef<FeatureCollection<Polygon | MultiPolygon> | null>(null)
+  const enabledRef = useRef(true)
+  enabledRef.current = enabled
 
   useEffect(() => {
     if (!map || !overlays || !ready) return
@@ -66,6 +70,7 @@ export function ThematicPanel() {
               source: SOURCE_ID,
               paint: { 'line-color': '#ffffff', 'line-width': 0.8 },
             })
+            setLayersVisible(target, [FILL_LAYER, LINE_LAYER], enabledRef.current)
           },
         })
       })
@@ -80,6 +85,11 @@ export function ThematicPanel() {
       overlays.unregister(SOURCE_ID)
     }
   }, [map, overlays, ready])
+
+  useEffect(() => {
+    if (!map || !dataReady) return
+    setLayersVisible(map, [FILL_LAYER, LINE_LAYER], enabled)
+  }, [map, dataReady, enabled])
 
   useEffect(() => {
     const data = dataRef.current
@@ -118,10 +128,18 @@ export function ThematicPanel() {
         yöntemle hesaplanır.
       </Text>
 
+      <Switch
+        size="xs"
+        label="Mahalle ayrımlarını haritada göster"
+        checked={enabled}
+        onChange={(event) => setEnabled(event.currentTarget.checked)}
+      />
+
       <Select
         size="xs"
         label="Gösterge"
         data={fieldOptions}
+        disabled={!enabled}
         value={field}
         onChange={(value) => value && setField(value)}
       />
@@ -130,6 +148,7 @@ export function ThematicPanel() {
           size="xs"
           label="Yöntem"
           data={METHODS}
+          disabled={!enabled}
           value={method}
           onChange={(value) => value && setMethod(value as ClassifyMethod)}
           allowDeselect={false}
@@ -139,12 +158,13 @@ export function ThematicPanel() {
           label="Sınıf"
           min={3}
           max={6}
+          disabled={!enabled}
           value={classes}
           onChange={(value) => setClasses(typeof value === 'number' ? value : 5)}
         />
       </Group>
 
-      {legend.length > 0 ? (
+      {enabled && legend.length > 0 ? (
         <Stack gap={4}>
           <Text size="xs" fw={600}>
             Lejant
