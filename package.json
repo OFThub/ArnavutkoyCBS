@@ -23,7 +23,8 @@
     "data:acilyol": "tsx scripts/ingest/04-ibb-acil-yol.ts",
     "data:saglik": "tsx scripts/ingest/05-ibb-saglik.ts",
     "data:osm": "tsx scripts/ingest/06-osm-snapshot.ts",
-    "data:ilceler": "tsx scripts/ingest/07-komsu-ilceler.ts"
+    "data:ilceler": "tsx scripts/ingest/07-komsu-ilceler.ts",
+    "icons": "tsx scripts/generate-icons.ts"
   },
   "dependencies": {
     "@mantine/charts": "^8.3.14",
@@ -53,7 +54,10 @@
     "tsx": "^4.20.7",
     "typescript": "^5.9.3",
     "vite": "^8.1.5",
+    "vite-plugin-pwa": "^1.3.0",
     "vitest": "^4.0.18",
+    "workbox-build": "^7.4.1",
+    "workbox-window": "^7.4.1",
     "xlsx": "^0.18.5",
     "zod": "^4.3.12"
   }

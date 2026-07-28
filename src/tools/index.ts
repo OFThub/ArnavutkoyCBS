@@ -1,6 +1,7 @@
 // Araç modüllerinin tek toplanma noktası; her yeni araç burada bir satırla kaydedilir.
 
 import { registerTools } from './registry'
+import { benchmarkTool } from './BenchmarkTool'
 import { bufferTool } from './BufferTool'
 import { coordinateTool } from './CoordinateTool'
 import { inspectorTool } from './InspectorTool'
@@ -27,6 +28,7 @@ const tools: ToolModule[] = [
   numberingTool,
   panoramaTool,
   workspaceTool,
+  benchmarkTool,
   printTool,
 ]
 

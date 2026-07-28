@@ -5,7 +5,13 @@ import { Alert, Button, Group, Loader, Stack, Text } from '@mantine/core'
 import { notifications } from '@mantine/notifications'
 import { formatCount } from '../core/format'
 import { loadMahalleThematic } from '../theming/mahalleData'
-import { buildReportRows, reportTotals, type MahalleReportRow } from '../reports/mahalleReport'
+import {
+  buildReportRows,
+  exportMahalleExcel,
+  exportMahallePdf,
+  reportTotals,
+  type MahalleReportRow,
+} from '../reports/mahalleReport'
 import { ToolMetrics } from '../tools/ToolMetrics'
 
 const BarChart = lazy(() => import('@mantine/charts').then((m) => ({ default: m.BarChart })))
@@ -42,7 +48,6 @@ export function DashboardPanel() {
   const exportFile = async (kind: 'excel' | 'pdf'): Promise<void> => {
     setBusy(kind)
     try {
-      const { exportMahalleExcel, exportMahallePdf } = await import('../reports/mahalleReport')
       const file = kind === 'excel' ? await exportMahalleExcel(rows) : await exportMahallePdf(rows)
       notifications.show({ color: 'teal', title: 'Rapor', message: `${file} indirildi` })
     } catch (cause: unknown) {

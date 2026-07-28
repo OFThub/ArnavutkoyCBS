@@ -13,6 +13,7 @@ import { installLayers } from './layers'
 import { installAnalyses } from './analysis'
 import { installTools } from './tools'
 import { currentSession, onAuthChange } from './lib/supabase'
+import { registerPwa } from './pwa/registerPwa'
 import { useAppStore } from './store/appStore'
 
 const theme = createTheme({
@@ -30,6 +31,8 @@ void currentSession()
   .catch(() => useAppStore.getState().setSession(null))
 
 onAuthChange((session) => useAppStore.getState().setSession(session))
+
+registerPwa()
 
 const container = document.getElementById('root')
 if (!container) throw new Error('#root bulunamadı')
