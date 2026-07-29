@@ -10,6 +10,8 @@ import { run as acilYol } from './04-ibb-acil-yol'
 import { run as saglik } from './05-ibb-saglik'
 import { run as osm } from './06-osm-snapshot'
 import { run as komsuIlceler } from './07-komsu-ilceler'
+import { run as iettDurak } from './08-iett-durak'
+import { run as toplanmaAlani } from './09-toplanma-alani'
 
 interface Adim {
   id: string
@@ -25,6 +27,8 @@ const ADIMLAR: Adim[] = [
   { id: '05-ibb-saglik', zorunlu: false, run: saglik },
   { id: '06-osm-snapshot', zorunlu: false, run: osm },
   { id: '07-komsu-ilceler', zorunlu: false, run: komsuIlceler },
+  { id: '08-iett-durak', zorunlu: false, run: iettDurak },
+  { id: '09-toplanma-alani', zorunlu: false, run: toplanmaAlani },
 ]
 
 export async function run(): Promise<void> {

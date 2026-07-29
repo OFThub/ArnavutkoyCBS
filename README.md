@@ -2,6 +2,19 @@
 
 Arnavutköy Belediyesi coğrafi bilgi sistemi web uygulaması.
 
+İki sayfa sunar:
+
+- `/` — **CBS tezgâhı.** Tam ekran harita, sol enstrüman rayı, katman/araç/analiz panelleri.
+  Rol tabanlı: ziyaretçi kamu katmanlarını, personel mülkiyet ve imar katmanlarını görür.
+- `/rehber` — **Mahalle karnesi.** Vatandaşa dönük kamu sayfası: bir mahalleye taşınmadan
+  önce bakılan göstergeler (deprem senaryosu, günlük ihtiyaçlara mesafe, mahalledeki
+  hizmetler, altyapı hasar beklentisi).
+
+Uygulama tek sayfalık (SPA) olduğu için `/rehber` adresinin doğrudan açılabilmesi sunucu
+tarafında bir geri düşüş kuralı ister. Netlify için `public/_redirects`, Vercel için
+`vercel.json` deposu içinde hazır. nginx kullanıyorsanız:
+`try_files $uri $uri/ /index.html;`
+
 ## Gereksinimler
 
 - Node.js 20 veya üzeri
@@ -33,10 +46,25 @@ npm run data:deprem     # İBB deprem senaryosu (38 mahalle + UAVT)
 npm run data:mahalle    # mahalle sınırı (geokod → Voronoi, YAKLAŞIK)
 npm run data:acilyol    # İBB acil ulaşım yolları
 npm run data:saglik     # İBB sağlık kurumları
-npm run data:osm        # Overpass anlık görüntüsü
+npm run data:osm        # Overpass anlık görüntüsü (bina, yol, POI, kent hizmetleri, arazi kullanımı)
+npm run data:ilceler    # komşu ilçe sınırları
+npm run data:durak      # İETT otobüs durakları
+npm run data:toplanma   # acil toplanma alanları
 ```
 
 `data:mahalle` adımı `data:deprem` çıktısına, tüm mekânsal filtreler `data:district` çıktısına bağlıdır.
+`data:durak` ve `data:toplanma` isteğe bağlıdır; CKAN veri seti çözülemezse hat devam eder
+ve duraklar OSM anlık görüntüsündeki `highway=bus_stop` katmanından beslenir.
+
+## Yazı tipleri
+
+Arayüz yazı tipleri (Archivo, JetBrains Mono) `public/fonts/` altında kendi sunucumuzda
+durur — PWA çevrimdışı çalışırken de metin doğru çizilsin diye çalışma anında Google
+Fonts'a istek gitmez. Yeniden indirmek için:
+
+```bash
+npm run fonts
+```
 
 ## Veritabanı
 

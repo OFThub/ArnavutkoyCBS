@@ -19,6 +19,7 @@ interface AppState {
   session: Session | null
   basemap: BasemapId
   visibleLayers: string[]
+  layerOpacity: Record<string, number>
   activeToolId: string | null
   activeAnalysisId: string | null
   terrain3d: boolean
@@ -31,6 +32,7 @@ interface AppState {
   setBasemap: (basemap: BasemapId) => void
   toggleLayer: (id: string, visible?: boolean) => void
   setVisibleLayers: (ids: string[]) => void
+  setLayerOpacity: (id: string, opacity: number) => void
   setActiveTool: (id: string | null) => void
   setTerrain3d: (enabled: boolean) => void
   setBuilding3d: (enabled: boolean) => void
@@ -49,6 +51,7 @@ export const useAppStore = create<AppState>((set) => ({
   session: null,
   basemap: 'liberty',
   visibleLayers: [...DEFAULT_VISIBLE_LAYERS],
+  layerOpacity: {},
   activeToolId: null,
   activeAnalysisId: null,
   terrain3d: false,
@@ -71,6 +74,8 @@ export const useAppStore = create<AppState>((set) => ({
       }
     }),
   setVisibleLayers: (visibleLayers) => set({ visibleLayers }),
+  setLayerOpacity: (id, opacity) =>
+    set((state) => ({ layerOpacity: { ...state.layerOpacity, [id]: opacity } })),
   setActiveTool: (activeToolId) => set({ activeToolId }),
   setTerrain3d: (terrain3d) => set({ terrain3d }),
   setBuilding3d: (building3d) => set({ building3d }),

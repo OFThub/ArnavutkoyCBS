@@ -16,6 +16,7 @@ export const healthFacilitiesLayer: LayerModule = {
   title: 'Sağlık kurumları (İBB)',
   group: 'kent',
   access: 'public',
+  paintLayers: [CIRCLE_LAYER, LABEL_LAYER],
   legend: [{ color: COLOR, label: 'İBB kayıtlı sağlık kurumu', shape: 'circle' }],
 
   async register(map) {

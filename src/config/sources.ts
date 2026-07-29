@@ -15,6 +15,22 @@ export const BASEMAPS = {
     url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
     attribution: '© Esri, Maxar, Earthstar Geographics',
     maxZoom: 19,
+    // Uzaklaşınca sokak haritasına çapraz geçiş; uydu görüntüsü düşük zoom'da okunmaz.
+    fadeTo: {
+      url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',
+      attribution: '© Esri, HERE, Garmin, OpenStreetMap katkıcıları',
+      maxZoom: 19,
+    },
+    fadeZoom: [11, 13],
+  },
+  // Karanlık kip için altlık zorla değiştirilmez — kullanıcının seçimi kalır, koyu altlık seçenek olarak durur.
+  cartoDark: {
+    id: 'cartoDark',
+    title: 'Koyu',
+    kind: 'raster',
+    url: 'https://basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png',
+    attribution: '© OpenStreetMap katkıcıları © CARTO',
+    maxZoom: 20,
   },
   openTopoMap: {
     id: 'openTopoMap',
@@ -52,6 +68,7 @@ export const DATASETS = {
   ilceler: '/data/ilceler.geojson',
   calismaAlani: '/data/calisma-alani.geojson',
   toplanmaAlani: '/data/toplanma-alani.geojson',
+  otobusDuragi: '/data/otobus-duragi.geojson',
 } as const
 
 export type DatasetKey = keyof typeof DATASETS

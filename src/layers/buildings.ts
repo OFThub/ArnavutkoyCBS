@@ -16,6 +16,7 @@ export const buildingsLayer: LayerModule = {
   title: 'Binalar',
   group: 'kent',
   access: 'public',
+  paintLayers: [BUILDING_FILL_LAYER, BUILDING_EXTRUDE_LAYER],
   legend: [{ color: COLOR, label: 'Yapı kütlesi (OSM anlık görüntü)', shape: 'fill' }],
 
   async register(map) {

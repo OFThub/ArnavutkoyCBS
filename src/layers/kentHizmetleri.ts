@@ -1,0 +1,133 @@
+// Kent hizmeti katmanlarının config listesi; her satır OSM anlık görüntüsünden bir katman üretir.
+
+import type { LayerModule } from '../core/types'
+import { osmFeatureLayer, type OsmLayerSpec } from './osmFeatureLayer'
+
+// İmar plan lejandının OSM arazi kullanımı karşılıkları (Mekânsal Planlar Yönetmeliği renk kodu).
+const ARAZI_RENKLERI: Record<string, string> = {
+  residential: '#e8c95a',
+  commercial: '#d9534f',
+  retail: '#e07b5a',
+  industrial: '#9b6fb0',
+  allotments: '#8fbf6a',
+  cemetery: '#7a8f7a',
+  quarry: '#a8a29e',
+}
+
+const SPECS: OsmLayerSpec[] = [
+  {
+    id: 'kablosuz-ag',
+    title: 'Kablosuz ağ noktaları',
+    group: 'kent',
+    access: 'public',
+    tema: 'hizmet',
+    tags: { internet_access: ['wlan'], amenity: ['wifi'] },
+    shape: 'circle',
+    color: '#2E6E8E',
+    labelField: 'name',
+  },
+  {
+    id: 'sehir-kamerasi',
+    title: 'Şehir kameraları',
+    group: 'kent',
+    access: 'public',
+    tema: 'hizmet',
+    tags: { man_made: ['surveillance'] },
+    shape: 'circle',
+    color: '#7c3aed',
+  },
+  {
+    id: 'geri-donusum',
+    title: 'Geri dönüşüm noktaları',
+    group: 'kent',
+    access: 'public',
+    tema: 'hizmet',
+    tags: { amenity: ['recycling'] },
+    shape: 'circle',
+    color: '#6E8B3D',
+  },
+  {
+    id: 'pazar-bolgesi',
+    title: 'Pazar bölgeleri',
+    group: 'kent',
+    access: 'public',
+    tema: 'hizmet',
+    tags: { amenity: ['marketplace'] },
+    shape: 'circle',
+    color: '#D9A02B',
+    labelField: 'name',
+  },
+  {
+    id: 'park-bahce',
+    title: 'Park ve bahçeler',
+    group: 'kent',
+    access: 'public',
+    tema: 'hizmet',
+    tags: { leisure: ['park', 'garden', 'playground', 'pitch'] },
+    shape: 'fill',
+    color: '#4d9c52',
+  },
+  {
+    id: 'otobus-duragi',
+    title: 'Otobüs durakları',
+    group: 'altyapi',
+    access: 'public',
+    tema: 'hizmet',
+    tags: { highway: ['bus_stop'], public_transport: ['platform'] },
+    shape: 'circle',
+    color: '#C8402F',
+    labelField: 'name',
+    minzoom: 12,
+  },
+  {
+    id: 'bisiklet-yolu',
+    title: 'Bisiklet yolları',
+    group: 'altyapi',
+    access: 'public',
+    tema: 'hizmet',
+    tags: { highway: ['cycleway'], bicycle: ['designated'] },
+    shape: 'line',
+    color: '#0ea5a4',
+  },
+  {
+    id: 'dere-alani',
+    title: 'Dere alanları',
+    group: 'altyapi',
+    access: 'public',
+    tema: 'hizmet',
+    tags: { waterway: ['river', 'stream', 'canal'] },
+    shape: 'line',
+    color: '#2E6E8E',
+    labelField: 'name',
+  },
+  {
+    id: 'arazi-kullanimi',
+    title: 'Arazi kullanımı (OSM — imar planı değildir)',
+    group: 'mulkiyet',
+    access: 'public',
+    tema: 'arazi',
+    tags: {
+      landuse: [
+        'residential',
+        'commercial',
+        'retail',
+        'industrial',
+        'allotments',
+        'cemetery',
+        'quarry',
+      ],
+    },
+    shape: 'fill',
+    color: '#a8a29e',
+    colorBy: { field: 'landuse', values: ARAZI_RENKLERI },
+    legend: [
+      { color: ARAZI_RENKLERI['residential']!, label: 'Konut alanı', shape: 'fill' },
+      { color: ARAZI_RENKLERI['commercial']!, label: 'Ticaret', shape: 'fill' },
+      { color: ARAZI_RENKLERI['industrial']!, label: 'Sanayi', shape: 'fill' },
+      { color: ARAZI_RENKLERI['allotments']!, label: 'Bahçe/hobi', shape: 'fill' },
+      { color: ARAZI_RENKLERI['cemetery']!, label: 'Mezarlık', shape: 'fill' },
+    ],
+  },
+]
+
+export const kentHizmetleriLayers: LayerModule[] = SPECS.map(osmFeatureLayer)

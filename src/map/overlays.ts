@@ -72,6 +72,30 @@ export function setLayersVisible(map: MapLibreMap, ids: string[], visible: boole
   }
 }
 
+// Katman türüne göre opaklık boya özelliği; symbol iki ayrı özellik kullanır.
+type PaintProperty = Parameters<MapLibreMap['setPaintProperty']>[1]
+
+const OPACITY_PROPERTIES: Record<string, PaintProperty[]> = {
+  fill: ['fill-opacity'],
+  line: ['line-opacity'],
+  circle: ['circle-opacity', 'circle-stroke-opacity'],
+  raster: ['raster-opacity'],
+  heatmap: ['heatmap-opacity'],
+  'fill-extrusion': ['fill-extrusion-opacity'],
+  symbol: ['text-opacity', 'icon-opacity'],
+}
+
+export function setLayersOpacity(map: MapLibreMap, ids: string[], opacity: number): void {
+  const value = Math.min(1, Math.max(0, opacity))
+  for (const id of ids) {
+    const layer = map.getLayer(id)
+    if (!layer) continue
+    for (const property of OPACITY_PROPERTIES[layer.type] ?? []) {
+      map.setPaintProperty(id, property, value)
+    }
+  }
+}
+
 export function createOverlayManager(map: MapLibreMap): OverlayManager {
   const overlays = new Map<string, MapOverlay & { seq: number }>()
   let counter = 0

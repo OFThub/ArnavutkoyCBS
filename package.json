@@ -24,7 +24,10 @@
     "data:saglik": "tsx scripts/ingest/05-ibb-saglik.ts",
     "data:osm": "tsx scripts/ingest/06-osm-snapshot.ts",
     "data:ilceler": "tsx scripts/ingest/07-komsu-ilceler.ts",
-    "icons": "tsx scripts/generate-icons.ts"
+    "data:durak": "tsx scripts/ingest/08-iett-durak.ts",
+    "data:toplanma": "tsx scripts/ingest/09-toplanma-alani.ts",
+    "icons": "tsx scripts/generate-icons.ts",
+    "fonts": "tsx scripts/fetch-fonts.ts"
   },
   "dependencies": {
     "@mantine/charts": "^8.3.14",
@@ -32,6 +35,7 @@
     "@mantine/hooks": "^8.3.14",
     "@mantine/notifications": "^8.3.14",
     "@supabase/supabase-js": "^2.95.3",
+    "@tabler/icons-react": "^3.46.0",
     "@turf/turf": "^7.3.5",
     "d3-contour": "^4.0.2",
     "idb-keyval": "^6.3.0",

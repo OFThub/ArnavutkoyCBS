@@ -65,6 +65,8 @@ export interface LayerModule {
   setVisible(map: MapLibreMap, visible: boolean): void
   themable?: ThemableField[]
   legend?: LegendItem[]
+  /** MapLibre katman kimlikleri; verilirse panelde opaklık kaydırıcısı açılır. */
+  paintLayers?: string[]
 }
 
 export type ParamSpec =

@@ -4,8 +4,8 @@ import { useState } from 'react'
 import {
   Alert,
   Badge,
+  Box,
   Button,
-  Group,
   Menu,
   Modal,
   PasswordInput,
@@ -53,11 +53,13 @@ export function AuthControl() {
     return (
       <Menu shadow="md" position="bottom-end">
         <Menu.Target>
-          <Button size="compact-sm" variant="light">
-            <Badge variant="filled" color={role === 'yonetici' ? 'grape' : 'teal'} mr={6}>
+          <Button size="compact-sm" variant="default">
+            <Badge variant="filled" color={role === 'yonetici' ? 'su' : 'tarim'} mr={6}>
               {ROLE_LABEL[role] ?? role}
             </Badge>
-            {session.user.email}
+            <Box component="span" visibleFrom="sm">
+              {session.user.email}
+            </Box>
           </Button>
         </Menu.Target>
         <Menu.Dropdown>
@@ -70,12 +72,21 @@ export function AuthControl() {
 
   return (
     <>
-      <Group gap="xs" wrap="nowrap">
-        <Badge variant="default">{ROLE_LABEL[role] ?? role}</Badge>
-        <Button size="compact-sm" variant="light" onClick={() => setOpened(true)} disabled={!backend}>
+      {/* Rol rozeti yok: "Personel girişi" düğmesini gören zaten ziyaretçi. */}
+      <Button
+        size="compact-sm"
+        variant="default"
+        onClick={() => setOpened(true)}
+        disabled={!backend}
+        title={backend ? undefined : 'Sunucu bağlantısı yapılandırılmamış'}
+      >
+        <Box component="span" visibleFrom="sm">
           Personel girişi
-        </Button>
-      </Group>
+        </Box>
+        <Box component="span" hiddenFrom="sm">
+          Giriş
+        </Box>
+      </Button>
 
       <Modal opened={opened} onClose={() => setOpened(false)} title="Personel girişi" centered>
         <Stack gap="sm">

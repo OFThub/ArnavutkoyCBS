@@ -3,7 +3,7 @@
 import type { Feature, FeatureCollection } from 'geojson'
 import { loadDataset } from '../core/dataset'
 
-export type SnapshotTheme = 'bina' | 'yol' | 'poi'
+export type SnapshotTheme = 'bina' | 'yol' | 'poi' | 'hizmet' | 'arazi'
 
 const HEALTH_AMENITIES = new Set(['hospital', 'clinic', 'doctors', 'pharmacy', 'dentist'])
 const EDUCATION_AMENITIES = new Set(['school', 'college', 'university', 'kindergarten'])

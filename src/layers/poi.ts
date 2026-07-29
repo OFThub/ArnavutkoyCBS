@@ -60,6 +60,7 @@ export const poiLayer: LayerModule = {
   title: 'Önemli noktalar',
   group: 'kent',
   access: 'public',
+  paintLayers: [CIRCLE_LAYER, LABEL_LAYER],
   legend: POI_CATEGORIES.map((item) => ({
     color: item.color,
     label: item.label,

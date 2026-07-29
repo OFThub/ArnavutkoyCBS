@@ -43,6 +43,32 @@ const TEMALAR: Tema[] = [
       `way["leisure"="park"](${BBOX});` +
       `);out geom;`,
   },
+  {
+    // Kent hizmetleri: wifi, kamera, geri dönüşüm, pazar, park, durak, bisiklet, dere.
+    id: 'hizmet',
+    query:
+      `[out:json][timeout:300];(` +
+      `node["amenity"~"^(recycling|marketplace)$"](${BBOX});` +
+      `way["amenity"~"^(recycling|marketplace)$"](${BBOX});` +
+      `node["man_made"="surveillance"](${BBOX});` +
+      `node["internet_access"="wlan"](${BBOX});` +
+      `way["internet_access"="wlan"](${BBOX});` +
+      `node["highway"="bus_stop"](${BBOX});` +
+      `node["public_transport"="platform"](${BBOX});` +
+      `way["leisure"~"^(park|garden|playground|pitch)$"](${BBOX});` +
+      `way["highway"="cycleway"](${BBOX});` +
+      `way["bicycle"="designated"](${BBOX});` +
+      `way["waterway"~"^(river|stream|canal)$"](${BBOX});` +
+      `);out geom;`,
+  },
+  {
+    // İmar planı vekili: OSM arazi kullanımı. Resmî imar lekesi DEĞİLDİR.
+    id: 'arazi',
+    query:
+      `[out:json][timeout:300];(` +
+      `way["landuse"~"^(residential|commercial|industrial|retail|cemetery|quarry|allotments)$"](${BBOX});` +
+      `);out geom;`,
+  },
 ]
 
 interface OverpassElement {
@@ -115,7 +141,9 @@ function toFeature(element: OverpassElement, tema: string): Feature<Geometry> | 
 
   if (element.type === 'way' && element.geometry && element.geometry.length > 1) {
     const coords = element.geometry.map((node) => [node.lon, node.lat] as [number, number])
-    const areal = isClosed(coords) && (tags['building'] || tags['leisure'] || tags['amenity'])
+    const areal =
+      isClosed(coords) &&
+      (tags['building'] || tags['leisure'] || tags['amenity'] || tags['landuse'])
     return {
       type: 'Feature',
       geometry: areal
@@ -179,8 +207,13 @@ export async function run(): Promise<void> {
 
   ok(
     `bina ${sayim['bina'] ?? 0} · yol ${sayim['yol'] ?? 0} · POI ${sayim['poi'] ?? 0} · ` +
+      `hizmet ${sayim['hizmet'] ?? 0} · arazi ${sayim['arazi'] ?? 0} · ` +
       `sağlık+eğitim ${saglikEgitim} · bina alanı ${(binaAlani / 1_000_000).toFixed(2)} km²`,
   )
+
+  if ((sayim['hizmet'] ?? 0) === 0) {
+    warn('Kent hizmeti öğesi bulunamadı — wifi/durak/pazar katmanları boş kalacak')
+  }
 
   if ((sayim['bina'] ?? 0) < 4000) {
     warn(`Bina sayısı beklenen ≈5.637'nin belirgin altında — sorgu kapsamı kontrol edilmeli`)

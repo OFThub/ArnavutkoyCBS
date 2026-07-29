@@ -13,6 +13,7 @@ export const waterLayer: LayerModule = {
   title: 'Su yüzeyleri ve akarsular',
   group: 'kent',
   access: 'public',
+  paintLayers: [AREA_LAYER, LINE_LAYER],
   legend: [
     { color: COLOR, label: 'Göl / baraj / deniz', shape: 'fill' },
     { color: '#5b9bd5', label: 'Akarsu', shape: 'line' },

@@ -5,6 +5,7 @@ import { benchmarkTool } from './BenchmarkTool'
 import { bufferTool } from './BufferTool'
 import { coordinateTool } from './CoordinateTool'
 import { fieldTool } from './FieldTool'
+import { importTool } from './ImportTool'
 import { inspectorTool } from './InspectorTool'
 import { measureTool } from './MeasureTool'
 import { numberingTool } from './NumberingTool'
@@ -29,6 +30,7 @@ const tools: ToolModule[] = [
   numberingTool,
   panoramaTool,
   workspaceTool,
+  importTool,
   fieldTool,
   benchmarkTool,
   printTool,

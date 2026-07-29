@@ -39,6 +39,7 @@ export const roadsLayer: LayerModule = {
   title: 'Yollar',
   group: 'kent',
   access: 'public',
+  paintLayers: [CASING_LAYER, LINE_LAYER, LABEL_LAYER],
   legend: ROAD_CLASSES.map((item) => ({ color: item.color, label: item.label, shape: 'line' })),
 
   register(map) {

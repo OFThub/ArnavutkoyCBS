@@ -1,0 +1,142 @@
+/* Pafta tasarım jetonları. Kural: kabuk nötr-soğuk, ekrandaki tek doygun şey veri. */
+
+@import '/fonts/fonts.css';
+
+:root {
+  /* Renk — Türk imar/kadastro pafta lejandından türetildi. */
+  --pafta-murekkep: #10151c;
+  --pafta-murekkep-2: #1a222d;
+  --pafta-kagit: #e8eae6;
+  --pafta-kagit-2: #f4f5f2;
+  --pafta-kadastro: #c8402f;
+  --pafta-tarim: #6e8b3d;
+  --pafta-su: #2e6e8e;
+  --pafta-aski: #d9a02b;
+
+  /* Yüzey ve metin — renk şemasına göre değişen tek katman burası. */
+  --pafta-yuzey: rgb(244 245 242 / 94%);
+  --pafta-yuzey-duz: var(--pafta-kagit-2);
+  --pafta-metin: var(--pafta-murekkep);
+  --pafta-metin-soluk: #5a6472;
+  --pafta-cizgi: rgb(16 21 28 / 14%);
+  --pafta-cizgi-koyu: rgb(16 21 28 / 28%);
+
+  /* Tipografi — Archivo değişken genişlik ekseniyle; Condensed ayrı dosya değil. */
+  --pafta-yazi: 'Archivo', 'Segoe UI', system-ui, sans-serif;
+  --pafta-yazi-veri: 'JetBrains Mono', 'Cascadia Mono', Consolas, ui-monospace, monospace;
+  --pafta-genislik-dar: 78%;
+
+  /* Ritim */
+  --pafta-ray: 56px;
+  --pafta-panel: 340px;
+  --pafta-radius: 3px;
+  --pafta-gecis: 150ms;
+
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --pafta-yuzey: rgb(16 21 28 / 92%);
+    --pafta-yuzey-duz: var(--pafta-murekkep);
+    --pafta-metin: var(--pafta-kagit);
+    --pafta-metin-soluk: #8b96a5;
+    --pafta-cizgi: rgb(232 234 230 / 16%);
+    --pafta-cizgi-koyu: rgb(232 234 230 / 32%);
+  }
+}
+
+/* Mantine'in elle geçiş düğmesi her iki yönde de kazanmalı. */
+:root[data-mantine-color-scheme='dark'] {
+  --pafta-yuzey: rgb(16 21 28 / 92%);
+  --pafta-yuzey-duz: var(--pafta-murekkep);
+  --pafta-metin: var(--pafta-kagit);
+  --pafta-metin-soluk: #8b96a5;
+  --pafta-cizgi: rgb(232 234 230 / 16%);
+  --pafta-cizgi-koyu: rgb(232 234 230 / 32%);
+}
+
+:root[data-mantine-color-scheme='light'] {
+  --pafta-yuzey: rgb(244 245 242 / 94%);
+  --pafta-yuzey-duz: var(--pafta-kagit-2);
+  --pafta-metin: var(--pafta-murekkep);
+  --pafta-metin-soluk: #5a6472;
+  --pafta-cizgi: rgb(16 21 28 / 14%);
+  --pafta-cizgi-koyu: rgb(16 21 28 / 28%);
+}
+
+/* Antet — her teknik çizimin köşesindeki başlık bloğu. Tek imza öğesi. */
+.pafta-antet {
+  background: var(--pafta-yuzey);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--pafta-cizgi-koyu);
+  border-radius: var(--pafta-radius);
+  color: var(--pafta-metin);
+}
+
+.pafta-antet__baslik {
+  font-family: var(--pafta-yazi);
+  font-stretch: var(--pafta-genislik-dar);
+  font-weight: 700;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 5px 10px;
+  border-bottom: 1px solid var(--pafta-cizgi-koyu);
+  color: var(--pafta-metin-soluk);
+}
+
+.pafta-antet__satir {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 3px 10px;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.pafta-antet__satir + .pafta-antet__satir {
+  border-top: 1px solid var(--pafta-cizgi);
+}
+
+.pafta-antet__etiket {
+  font-family: var(--pafta-yazi);
+  font-stretch: var(--pafta-genislik-dar);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 10px;
+  color: var(--pafta-metin-soluk);
+  white-space: nowrap;
+}
+
+/* Veri rolü: koordinat, UAVT, ada/parsel. Tablo rakamları sayının zıplamasını engeller. */
+.pafta-veri {
+  font-family: var(--pafta-yazi-veri);
+  font-variant-numeric: tabular-nums slashed-zero;
+  font-size: 11px;
+  color: var(--pafta-metin);
+  white-space: nowrap;
+}
+
+.pafta-baslik {
+  font-family: var(--pafta-yazi);
+  font-stretch: var(--pafta-genislik-dar);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+/* Klavye odağı her zaman görünür — harita üstünde de kaybolmamalı. */
+:where(button, a, [role='button'], input, select, summary):focus-visible {
+  outline: 2px solid var(--pafta-kadastro);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
