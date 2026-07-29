@@ -281,7 +281,7 @@ function FieldPanel() {
         <Button
           size="xs"
           variant={recording ? 'filled' : 'light'}
-          color={recording ? 'red' : undefined}
+          {...(recording ? { color: 'red' } : {})}
           onClick={() => setRecording((value) => !value)}
         >
           {recording ? 'Kaydı durdur' : 'Kaydet'}

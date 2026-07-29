@@ -2,13 +2,13 @@
 
 import type { DeviceProfile } from './device'
 import type { GpuResult } from './gpu'
-import type { ScalingPoint } from './stats'
+import type { ScalingSet } from './parallel'
 import type { WorkloadResult } from './workloads'
 
 export interface BenchReport {
   cihaz: DeviceProfile
   isYukleri: WorkloadResult[]
-  olcekleme: ScalingPoint[]
+  olcekleme: ScalingSet[]
   gpu: GpuResult | null
 }
 
@@ -73,13 +73,16 @@ export async function exportBenchExcel(report: BenchReport): Promise<string> {
     XLSX.utils.book_append_sheet(
       book,
       XLSX.utils.aoa_to_sheet([
-        ['İşçi sayısı', 'Süre ms', 'Hızlanma', 'Verimlilik'],
-        ...report.olcekleme.map((point) => [
-          point.isciSayisi,
-          Number(point.sureMs.toFixed(2)),
-          Number(point.hizlanma.toFixed(3)),
-          Number(point.verimlilik.toFixed(3)),
-        ]),
+        ['Çekirdek', 'İşçi sayısı', 'Süre ms', 'Hızlanma', 'Verimlilik'],
+        ...report.olcekleme.flatMap((set) =>
+          set.noktalar.map((point) => [
+            set.baslik,
+            point.isciSayisi,
+            Number(point.sureMs.toFixed(2)),
+            Number(point.hizlanma.toFixed(3)),
+            Number(point.verimlilik.toFixed(3)),
+          ]),
+        ),
       ]),
       'Çekirdek ölçekleme',
     )
@@ -94,6 +97,8 @@ export async function exportBenchExcel(report: BenchReport): Promise<string> {
         ['Medyan kare (ms)', Number(report.gpu.medyanKareMs.toFixed(2))],
         ['p95 kare (ms)', Number(report.gpu.p95KareMs.toFixed(2))],
         ['Kare sayısı', report.gpu.kareSayisi],
+        ['Güvenilir', report.gpu.guvenilir ? 'evet' : 'hayır'],
+        ['Not', report.gpu.not ?? ''],
       ]),
       'GPU',
     )

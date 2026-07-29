@@ -1,4 +1,4 @@
-// GPU ölçümü: haritayı sürekli döndürüp gerçek kare sürelerini örnekler, saniyedeki kare ve p95 gecikmeyi verir.
+// GPU ölçümü: haritayı döndürüp gerçek kare sürelerini örnekler; sekme görünür değilse tarayıcı kare hızını kıstığı için ölçümü geçersiz işaretler.
 
 import type { Map as MapLibreMap } from 'maplibre-gl'
 import { percentile } from './stats'
@@ -8,9 +8,24 @@ export interface GpuResult {
   medyanKareMs: number
   p95KareMs: number
   kareSayisi: number
+  guvenilir: boolean
+  not: string | null
 }
 
+const UNRELIABLE_FPS = 5
+
 export async function measureMapFrames(map: MapLibreMap, durationMs = 3000): Promise<GpuResult> {
+  if (typeof document !== 'undefined' && document.visibilityState !== 'visible') {
+    return {
+      ortalamaFps: Number.NaN,
+      medyanKareMs: Number.NaN,
+      p95KareMs: Number.NaN,
+      kareSayisi: 0,
+      guvenilir: false,
+      not: 'Sekme görünür değil; tarayıcı kare hızını kıstığı için GPU ölçümü yapılmadı.',
+    }
+  }
+
   const frames: number[] = []
   const startBearing = map.getBearing()
 
@@ -41,12 +56,18 @@ export async function measureMapFrames(map: MapLibreMap, durationMs = 3000): Pro
   const usable = frames.slice(1)
   const total = usable.reduce((sum, value) => sum + value, 0)
   const sorted = [...usable].sort((a, b) => a - b)
-  const middle = sorted[Math.floor(sorted.length / 2)] ?? Number.NaN
+  const fps = total > 0 ? (usable.length / total) * 1000 : Number.NaN
+
+  const throttled = usable.length < 10 || fps < UNRELIABLE_FPS
 
   return {
-    ortalamaFps: total > 0 ? (usable.length / total) * 1000 : Number.NaN,
-    medyanKareMs: middle,
+    ortalamaFps: fps,
+    medyanKareMs: sorted[Math.floor(sorted.length / 2)] ?? Number.NaN,
     p95KareMs: percentile(usable, 0.95),
     kareSayisi: usable.length,
+    guvenilir: !throttled,
+    not: throttled
+      ? 'Kare hızı kısıtlı görünüyor (sekme arka planda veya pencere gizli). Ölçüm güvenilir değil.'
+      : null,
   }
 }

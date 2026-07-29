@@ -17,8 +17,8 @@ import {
 import { notifications } from '@mantine/notifications'
 import { readDeviceProfile, workerLadder, type DeviceProfile } from '../bench/device'
 import { measureMapFrames, type GpuResult } from '../bench/gpu'
-import { measureScaling } from '../bench/parallel'
-import { amdahlSerialFraction, type ScalingPoint } from '../bench/stats'
+import { measureScaling, type ScalingSet } from '../bench/parallel'
+import { amdahlSerialFraction } from '../bench/stats'
 import {
   buildWorkloads,
   cleanupWorkloads,
@@ -37,7 +37,7 @@ function BenchmarkPanel() {
   const { map, ready } = useMapContext()
   const [device, setDevice] = useState<DeviceProfile | null>(null)
   const [results, setResults] = useState<WorkloadResult[]>([])
-  const [scaling, setScaling] = useState<ScalingPoint[]>([])
+  const [scaling, setScaling] = useState<ScalingSet[]>([])
   const [gpu, setGpu] = useState<GpuResult | null>(null)
   const [progress, setProgress] = useState<{ etiket: string; oran: number } | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -113,9 +113,28 @@ function BenchmarkPanel() {
     }
   }
 
-  const best = scaling[scaling.length - 1]
-  const serial =
-    best && best.isciSayisi > 1 ? amdahlSerialFraction(best.isciSayisi, best.hizlanma) : Number.NaN
+  const chartData = (scaling[0]?.noktalar ?? []).map((point, index) => ({
+    isci: `${point.isciSayisi}`,
+    alu: Number((scaling[0]?.noktalar[index]?.hizlanma ?? 0).toFixed(2)),
+    bellek: Number((scaling[1]?.noktalar[index]?.hizlanma ?? 0).toFixed(2)),
+  }))
+
+  const scalingMetrics = scaling.flatMap((set) => {
+    const peak = set.noktalar[set.noktalar.length - 1]
+    if (!peak) return []
+    const serial =
+      peak.isciSayisi > 1 ? amdahlSerialFraction(peak.isciSayisi, peak.hizlanma) : Number.NaN
+    return [
+      {
+        label: `${set.baslik} · hızlanma`,
+        value: `${peak.hizlanma.toFixed(2)}× (verim %${(peak.verimlilik * 100).toFixed(0)})`,
+      },
+      {
+        label: `${set.baslik} · Amdahl seri oranı`,
+        value: Number.isFinite(serial) ? `%${(serial * 100).toFixed(1)}` : '—',
+      },
+    ]
+  })
 
   return (
     <Stack gap="sm">
@@ -203,40 +222,45 @@ function BenchmarkPanel() {
           <Divider label="Çekirdek ölçekleme" labelPosition="left" />
           <Suspense fallback={<Loader size="sm" />}>
             <BarChart
-              h={160}
-              data={scaling.map((point) => ({
-                isci: `${point.isciSayisi}`,
-                hizlanma: Number(point.hizlanma.toFixed(2)),
-              }))}
+              h={170}
+              data={chartData}
               dataKey="isci"
-              series={[{ name: 'hizlanma', label: 'Hızlanma', color: 'teal.6' }]}
+              series={[
+                { name: 'alu', label: 'Hesap (ALU)', color: 'teal.6' },
+                { name: 'bellek', label: 'Belleğe bağlı', color: 'orange.6' },
+              ]}
               tickLine="none"
+              withLegend
             />
           </Suspense>
-          <ToolMetrics
-            items={[
-              { label: 'En yüksek hızlanma', value: `${best?.hizlanma.toFixed(2) ?? '—'}×` },
-              { label: 'Paralel verimlilik', value: `%${((best?.verimlilik ?? 0) * 100).toFixed(0)}` },
-              {
-                label: 'Amdahl seri oranı',
-                value: Number.isFinite(serial) ? `%${(serial * 100).toFixed(1)}` : '—',
-              },
-            ]}
-          />
+          <ToolMetrics items={scalingMetrics} />
+          <Text fz={10} c="dimmed">
+            İki çekirdeğin farkı bu cihazın darboğazını gösterir: yalnız ALU kullanan yük çekirdek
+            sayısıyla ölçeklenirken, belleğe bağlı eğim çekirdeği paylaşılan bellek yolunda doyuma
+            ulaşır.
+          </Text>
         </>
       ) : null}
 
       {gpu ? (
         <>
           <Divider label="GPU" labelPosition="left" />
-          <ToolMetrics
-            items={[
-              { label: 'Ortalama FPS', value: gpu.ortalamaFps.toFixed(1) },
-              { label: 'Medyan kare', value: `${gpu.medyanKareMs.toFixed(2)} ms` },
-              { label: 'p95 kare', value: `${gpu.p95KareMs.toFixed(2)} ms` },
-              { label: 'Örneklenen kare', value: String(gpu.kareSayisi) },
-            ]}
-          />
+          {gpu.not ? (
+            <Alert color="yellow" p="xs">
+              <Text size="xs">{gpu.not}</Text>
+            </Alert>
+          ) : null}
+          {gpu.kareSayisi > 0 ? (
+            <ToolMetrics
+              items={[
+                { label: 'Ortalama FPS', value: gpu.ortalamaFps.toFixed(1) },
+                { label: 'Medyan kare', value: `${gpu.medyanKareMs.toFixed(2)} ms` },
+                { label: 'p95 kare', value: `${gpu.p95KareMs.toFixed(2)} ms` },
+                { label: 'Örneklenen kare', value: String(gpu.kareSayisi) },
+                { label: 'Güvenilir', value: gpu.guvenilir ? 'evet' : 'hayır' },
+              ]}
+            />
+          ) : null}
         </>
       ) : null}
 
