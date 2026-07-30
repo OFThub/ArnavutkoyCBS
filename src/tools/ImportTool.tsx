@@ -1,7 +1,7 @@
 // Veri içe aktarma: personelin GeoJSON dosyasını kurumsal bir tabloya toplu yazması.
 
 import { useState } from 'react'
-import { Alert, Button, FileInput, Select, Stack, Text } from '@mantine/core'
+import { Alert, Button, Divider, FileInput, Select, Stack, Switch, Text } from '@mantine/core'
 import { notifications } from '@mantine/notifications'
 import type { Feature, FeatureCollection } from 'geojson'
 import { supabase } from '../lib/supabase'
@@ -105,6 +105,24 @@ export function prepareRows(features: Feature[], hedef: Hedef): Hazirlik {
   return { rows, eksikZorunlu, geometrisiz }
 }
 
+function DevModeControl() {
+  const devMode = useAppStore((state) => state.devMode)
+  const setDevMode = useAppStore((state) => state.setDevMode)
+
+  return (
+    <>
+      <Divider />
+      <Switch
+        size="xs"
+        label="DEV mode"
+        description="Açıkken kurumsal katmanlar (imar planı, rayiç, numarataj vb.) örnek demo verileriyle gösterilir. Kapalıyken gerçek içe aktarılan veriler gösterilir."
+        checked={devMode}
+        onChange={(event) => setDevMode(event.currentTarget.checked)}
+      />
+    </>
+  )
+}
+
 function ImportPanel() {
   const role = useAppStore((state) => state.role)
   const [file, setFile] = useState<File | null>(null)
@@ -116,18 +134,24 @@ function ImportPanel() {
 
   if (!supabase) {
     return (
-      <Text size="xs" c="dimmed">
-        Sunucu bağlantısı yapılandırılmadı. `.env` içindeki VITE_SUPABASE_URL ve
-        VITE_SUPABASE_ANON_KEY doldurulduğunda içe aktarma açılır.
-      </Text>
+      <Stack gap="xs">
+        <Text size="xs" c="dimmed">
+          Sunucu bağlantısı yapılandırılmadı. `.env` içindeki VITE_SUPABASE_URL ve
+          VITE_SUPABASE_ANON_KEY doldurulduğunda içe aktarma açılır.
+        </Text>
+        <DevModeControl />
+      </Stack>
     )
   }
 
   if (role === 'public') {
     return (
-      <Text size="xs" c="dimmed">
-        Veri içe aktarmak için personel hesabıyla giriş yapın.
-      </Text>
+      <Stack gap="xs">
+        <Text size="xs" c="dimmed">
+          Veri içe aktarmak için personel hesabıyla giriş yapın.
+        </Text>
+        <DevModeControl />
+      </Stack>
     )
   }
 
@@ -209,6 +233,8 @@ function ImportPanel() {
           <Text size="xs">{error}</Text>
         </Alert>
       ) : null}
+
+      <DevModeControl />
     </Stack>
   )
 }

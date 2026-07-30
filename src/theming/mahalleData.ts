@@ -14,8 +14,6 @@ export const MAHALLE_FIELDS: MahalleField[] = [
   { key: 'agir_hasarli_bina_sayisi', label: 'Ağır hasarlı bina' },
   { key: 'orta_hasarli_bina_sayisi', label: 'Orta hasarlı bina' },
   { key: 'hafif_hasarli_bina_sayisi', label: 'Hafif hasarlı bina' },
-  { key: 'can_kaybi_sayisi', label: 'Can kaybı' },
-  { key: 'agir_yarali_sayisi', label: 'Ağır yaralı' },
   { key: 'gecici_barinma', label: 'Geçici barınma', unit: 'kişi' },
   { key: 'dogalgaz_boru_hasari', label: 'Doğalgaz boru hasarı' },
   { key: 'icme_suyu_boru_hasari', label: 'İçme suyu boru hasarı' },

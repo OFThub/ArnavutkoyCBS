@@ -63,7 +63,7 @@ const SPECS: SupabaseLayerSpec[] = [
     table: 'adres',
     select: 'id, csbm, kapi_no, bagimsiz_bolum, uavt_kod, geom',
     shape: 'circle',
-    color: '#C8402F',
+    color: '#0891b2',
     labelField: 'kapi_no',
     limit: 20000,
     bosMesaj:

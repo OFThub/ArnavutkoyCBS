@@ -4,6 +4,8 @@ import type { AddLayerObject } from 'maplibre-gl'
 import type { Feature, FeatureCollection, Geometry } from 'geojson'
 import { notifications } from '@mantine/notifications'
 import { supabase } from '../lib/supabase'
+import { DEV_DEMO_DATA } from '../data/devDemoData'
+import { useAppStore } from '../store/appStore'
 import type { Access, LayerGroup, LayerModule, LegendItem } from '../core/types'
 import { LABEL_FONT } from '../map/basemap'
 import { setLayersVisible, upsertGeoJsonSource, upsertLayer } from '../map/overlays'
@@ -106,23 +108,31 @@ export function supabaseLayer(spec: SupabaseLayerSpec): LayerModule {
     legend: spec.legend ?? [{ color: spec.color, label: spec.title, shape: spec.shape }],
 
     async register(map) {
-      if (!supabase) {
-        notifications.show({
-          color: 'gray',
-          title: spec.title,
-          message: `Sunucu bağlantısı yapılandırılmadı. ${spec.bosMesaj}`,
-        })
-        return
+      const devMode = useAppStore.getState().devMode
+
+      let rows: Row[]
+      if (devMode) {
+        rows = DEV_DEMO_DATA[spec.id] ?? []
+      } else {
+        if (!supabase) {
+          notifications.show({
+            color: 'gray',
+            title: spec.title,
+            message: `Sunucu bağlantısı yapılandırılmadı. ${spec.bosMesaj}`,
+          })
+          return
+        }
+
+        let query = supabase.from(spec.table).select(spec.select).limit(spec.limit ?? DEFAULT_LIMIT)
+        if (spec.equals) query = query.eq(spec.equals.column, spec.equals.value)
+
+        const { data, error } = await query
+        if (error) throw new Error(`${spec.title} okunamadı: ${error.message}`)
+        // select() dizesi çalışma zamanında geldiği için PostgREST satır tipini çıkaramaz.
+        rows = (data ?? []) as unknown as Row[]
       }
 
-      let query = supabase.from(spec.table).select(spec.select).limit(spec.limit ?? DEFAULT_LIMIT)
-      if (spec.equals) query = query.eq(spec.equals.column, spec.equals.value)
-
-      const { data, error } = await query
-      if (error) throw new Error(`${spec.title} okunamadı: ${error.message}`)
-
-      // select() dizesi çalışma zamanında geldiği için PostgREST satır tipini çıkaramaz.
-      const { collection, atlanan } = rowsToCollection((data ?? []) as unknown as Row[])
+      const { collection, atlanan } = rowsToCollection(rows)
 
       if (collection.features.length === 0) {
         notifications.show({

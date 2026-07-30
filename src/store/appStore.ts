@@ -28,12 +28,14 @@ interface AppState {
   contourInterval: number
   lastResult: AnalysisResult | null
   sketch: Feature[]
+  devMode: boolean
   setSession: (session: Session | null) => void
   setBasemap: (basemap: BasemapId) => void
   toggleLayer: (id: string, visible?: boolean) => void
   setVisibleLayers: (ids: string[]) => void
   setLayerOpacity: (id: string, opacity: number) => void
   setActiveTool: (id: string | null) => void
+  setDevMode: (enabled: boolean) => void
   setTerrain3d: (enabled: boolean) => void
   setBuilding3d: (enabled: boolean) => void
   setTerrainExaggeration: (value: number) => void
@@ -60,6 +62,7 @@ export const useAppStore = create<AppState>((set) => ({
   contourInterval: 10,
   lastResult: null,
   sketch: [],
+  devMode: false,
   setSession: (session) => set({ session, role: roleFromSession(session) }),
   setBasemap: (basemap) => set({ basemap }),
   toggleLayer: (id, visible) =>
@@ -77,6 +80,7 @@ export const useAppStore = create<AppState>((set) => ({
   setLayerOpacity: (id, opacity) =>
     set((state) => ({ layerOpacity: { ...state.layerOpacity, [id]: opacity } })),
   setActiveTool: (activeToolId) => set({ activeToolId }),
+  setDevMode: (devMode) => set({ devMode }),
   setTerrain3d: (terrain3d) => set({ terrain3d }),
   setBuilding3d: (building3d) => set({ building3d }),
   setTerrainExaggeration: (terrainExaggeration) => set({ terrainExaggeration }),

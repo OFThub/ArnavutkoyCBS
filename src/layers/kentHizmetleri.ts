@@ -34,7 +34,7 @@ const SPECS: OsmLayerSpec[] = [
     tema: 'hizmet',
     tags: { man_made: ['surveillance'] },
     shape: 'circle',
-    color: '#7c3aed',
+    color: '#1e293b',
   },
   {
     id: 'geri-donusum',

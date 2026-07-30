@@ -9,7 +9,7 @@ import { setLayersVisible, upsertGeoJsonSource, upsertLayer } from '../map/overl
 const SOURCE_ID = 'saglik-kurumu'
 const CIRCLE_LAYER = 'saglik-kurumu-daire'
 const LABEL_LAYER = 'saglik-kurumu-etiket'
-const COLOR = '#be123c'
+const COLOR = '#ea580c'
 
 export const healthFacilitiesLayer: LayerModule = {
   id: 'saglik-kurumu',
@@ -46,7 +46,7 @@ export const healthFacilitiesLayer: LayerModule = {
         'text-offset': [0, 0.8],
         'text-max-width': 10,
       },
-      paint: { 'text-color': '#7f1d1d', 'text-halo-color': '#ffffff', 'text-halo-width': 1.4 },
+      paint: { 'text-color': '#7c2d12', 'text-halo-color': '#ffffff', 'text-halo-width': 1.4 },
     })
   },
 
