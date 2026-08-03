@@ -14,6 +14,7 @@ import { hillshadeLayer } from './hillshade'
 import { hypsometricLayer } from './hypsometric'
 import { kentHizmetleriLayers } from './kentHizmetleri'
 import { kurumsalLayers } from './kurumsal'
+import { mahalleLayer } from './mahalle'
 import { poiLayer } from './poi'
 import { roadsLayer } from './roads'
 import { slopeLayer } from './slope'
@@ -37,6 +38,7 @@ const layers: LayerModule[] = [
   ...kentHizmetleriLayers,
   ...kurumsalLayers,
   neighborDistrictsLayer,
+  mahalleLayer,
   districtBoundaryLayer,
 ]
 

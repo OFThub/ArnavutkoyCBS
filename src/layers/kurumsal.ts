@@ -1,24 +1,51 @@
 // Kurumsal katmanların config listesi; şema ve RLS zaten hazır, her satır bir tabloyu haritaya bağlar.
 
+import {
+  IMAR_FONKSIYONLARI,
+  IMAR_RENKLERI,
+  TESIS_DURUMLARI,
+  TESIS_DURUM_RENKLERI,
+  TESIS_TURLERI,
+  etiketIfadesi,
+  metinEki,
+  sayiEki,
+  tamSayiEki,
+} from '../core/imar'
 import type { LayerModule } from '../core/types'
 import { supabaseLayer, type SupabaseLayerSpec } from './supabaseLayer'
 
-// İmar plan lejandı renk kodu (Mekânsal Planlar Yapım Yönetmeliği).
-const IMAR_RENKLERI: Record<string, string> = {
-  konut: '#e8c95a',
-  ticaret: '#d9534f',
-  'ticaret-konut': '#e07b5a',
-  sanayi: '#9b6fb0',
-  'resmi-kurum': '#8aa2c0',
-  egitim: '#f0a94a',
-  saglik: '#e86a6a',
-  'yesil-alan': '#6E8B3D',
-  park: '#4d9c52',
-  rekreasyon: '#7fbf7f',
-  tarim: '#c8d68a',
-  orman: '#3f7a3f',
-  su: '#2E6E8E',
-}
+// Haritada lekenin üstüne yazılan künye:
+//   Dini tesis
+//   Ada/Parsel 1520/7
+//   E:0.5 · Hmax:24.5 · 2 kat
+export const LEKE_ETIKETI: unknown = [
+  'concat',
+  etiketIfadesi('fonksiyon', IMAR_FONKSIYONLARI),
+  ['case', ['!=', ['to-string', ['coalesce', ['get', 'ada'], '']], ''], '\n', ''],
+  metinEki('ada', 'Ada/Parsel '),
+  metinEki('parsel', '/'),
+  '\n',
+  sayiEki('kaks', 'E:'),
+  sayiEki('taks', ' · T:'),
+  sayiEki('hmax', ' · Hmax:'),
+  tamSayiEki('kat_adedi', ' · ', ' kat'),
+]
+
+// Tesis künyesi tam olarak sorulan bilgiyi taşır: ne olacak, ne kadar alan, hangi yıl.
+//   Merkez Camii
+//   Cami · 1.200 m² · 750 kişi
+//   Planlanan · 2027
+export const TESIS_ETIKETI: unknown = [
+  'concat',
+  ['to-string', ['coalesce', ['get', 'ad'], etiketIfadesi('tur', TESIS_TURLERI)]],
+  '\n',
+  etiketIfadesi('tur', TESIS_TURLERI),
+  tamSayiEki('alan_m2', ' · ', ' m²'),
+  tamSayiEki('kapasite', ' · ', ' kişi'),
+  '\n',
+  etiketIfadesi('durum', TESIS_DURUMLARI),
+  tamSayiEki('yil', ' · '),
+]
 
 const SPECS: SupabaseLayerSpec[] = [
   {
@@ -27,10 +54,11 @@ const SPECS: SupabaseLayerSpec[] = [
     group: 'mulkiyet',
     access: 'personel',
     table: 'imar_lekesi',
-    select: 'id, fonksiyon, taks, kaks, hmax, geom',
+    select: 'id, fonksiyon, taks, kaks, hmax, kat_adedi, yapi_nizami, ada, parsel, plan_notu, geom',
     shape: 'fill',
     color: '#a8a29e',
     colorBy: { field: 'fonksiyon', values: IMAR_RENKLERI },
+    label: { text: LEKE_ETIKETI, minzoom: 13, size: 10.5, allowOverlap: true },
     bosMesaj:
       'İmar lekesi verisi henüz yüklenmedi. Belediye imar planı GeoJSON olarak içe aktarıldığında bu katman dolar (Araçlar → Veri içe aktar).',
     legend: [
@@ -40,6 +68,30 @@ const SPECS: SupabaseLayerSpec[] = [
       { color: IMAR_RENKLERI['egitim']!, label: 'Eğitim', shape: 'fill' },
       { color: IMAR_RENKLERI['yesil-alan']!, label: 'Yeşil alan', shape: 'fill' },
       { color: IMAR_RENKLERI['tarim']!, label: 'Tarım', shape: 'fill' },
+    ],
+  },
+  {
+    id: 'imar-tesisi',
+    title: 'İmar tesisleri (leke içi)',
+    group: 'mulkiyet',
+    access: 'personel',
+    table: 'imar_tesisi',
+    select: 'id, leke_id, tur, ad, alan_m2, kapasite, durum, yil, aciklama, geom',
+    shape: 'fill',
+    color: '#b08968',
+    // Durum rengi türden daha çok işe yarıyor: hangisi yapıldı, hangisi hâlâ plan?
+    colorBy: { field: 'durum', values: TESIS_DURUM_RENKLERI },
+    label: { text: TESIS_ETIKETI, minzoom: 13, size: 10.5, allowOverlap: true },
+    bosMesaj:
+      'Leke içi tesis kaydı yok. Araçlar → İmar planı düzenle ile lekeye cami, okul, park gibi tesisler ekleyebilirsiniz.',
+    legend: [
+      { color: TESIS_DURUM_RENKLERI['mevcut']!, label: 'Mevcut (yapıldı)', shape: 'fill' },
+      {
+        color: TESIS_DURUM_RENKLERI['yapim_asamasinda']!,
+        label: 'Yapım aşamasında',
+        shape: 'fill',
+      },
+      { color: TESIS_DURUM_RENKLERI['planlanan']!, label: 'Planlanan', shape: 'fill' },
     ],
   },
   {

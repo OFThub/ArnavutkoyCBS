@@ -4,6 +4,8 @@
 import * as turf from '@turf/turf'
 import type { Feature, FeatureCollection, MultiPolygon, Point, Polygon } from 'geojson'
 import { loadDataset } from '../core/dataset'
+import { ortalamayaOran, yogunlukSinifi, type YogunlukSinifi } from '../core/nufus'
+import { loadMahalleNufus } from '../data/mahalleNufus'
 import { snapshotTheme } from '../data/osmSnapshot'
 import { toPoint } from '../layers/osmFeatureLayer'
 import { loadMahalleThematic } from '../theming/mahalleData'
@@ -16,10 +18,29 @@ export interface KarneBolumu {
   etiket: string
 }
 
+/**
+ * Nüfus ve alan bilerek PUANLANMAZ ve genel puana girmez: yüksek yoğunluk objektif olarak
+ * iyi ya da kötü değil. Ham değer + sınıf etiketi olarak gösterilir.
+ */
+export interface KarneNufus {
+  nufus: number | null
+  hane: number | null
+  alanKm2: number | null
+  yogunlukKisiKm2: number | null
+  haneBasinaKisi: number | null
+  /** İlçe yoğunluk ortalamasına oran; 1'in üstü ilçeden yoğun demek. */
+  ilceOrani: number | null
+  sinif: YogunlukSinifi | null
+  tahmini: boolean
+  veriYili: number | null
+  kaynak: string
+}
+
 export interface MahalleKarne {
   uavt: string
   ad: string
   merkez: [number, number]
+  nufus: KarneNufus
   deprem: KarneBolumu & {
     agirHasarliBina: number
     toplamHasarliBina: number
@@ -100,13 +121,14 @@ function icindekiler(alan: Feature<Polygon | MultiPolygon>, noktalar: Feature[])
 }
 
 export async function loadKarneler(): Promise<MahalleKarne[]> {
-  const [mahalleler, hizmet, poi, saglik] = await Promise.all([
+  const [mahalleler, hizmet, poi, saglik, nufusSeti] = await Promise.all([
     loadMahalleThematic(),
     snapshotTheme('hizmet'),
     snapshotTheme('poi'),
     loadDataset<FeatureCollection>('saglikKurumu').catch(
       () => ({ type: 'FeatureCollection', features: [] }) as FeatureCollection,
     ),
+    loadMahalleNufus(),
   ])
 
   // OSM'de aynı nesne düğüm veya alan olabilir; mesafe ve alan-içi sayım için hepsi noktaya indirilir.
@@ -184,10 +206,26 @@ export async function loadKarneler(): Promise<MahalleKarne[]> {
 
     const genelPuan = Math.round((depremPuan + erisimPuan + hizmetPuan + altyapiPuan) / 4)
 
+    const uavt = String(props['uavt_kod'] ?? '')
+    const nufusKaydi = nufusSeti.kayitlar.get(uavt) ?? null
+
     return {
-      uavt: String(props['uavt_kod'] ?? ''),
+      uavt,
       ad: String(props['ad'] ?? ''),
       merkez,
+      nufus: {
+        nufus: nufusKaydi?.nufus ?? null,
+        hane: nufusKaydi?.hane ?? null,
+        // Alan seed'de yoksa tematik geometri özelliğinden okunur.
+        alanKm2: nufusKaydi?.alanKm2 ?? (Number(props['alan_km2']) || null),
+        yogunlukKisiKm2: nufusKaydi?.yogunlukKisiKm2 ?? null,
+        haneBasinaKisi: nufusKaydi?.haneBasinaKisi ?? null,
+        ilceOrani: ortalamayaOran(nufusKaydi?.yogunlukKisiKm2 ?? null, nufusSeti.ilceYogunlugu),
+        sinif: yogunlukSinifi(nufusKaydi?.yogunlukKisiKm2 ?? null),
+        tahmini: nufusKaydi?.tahmini ?? true,
+        veriYili: nufusKaydi?.veriYili ?? null,
+        kaynak: nufusKaydi?.kaynak ?? 'Veri yok',
+      },
       deprem: {
         puan: depremPuan,
         etiket: puanEtiketi(depremPuan),

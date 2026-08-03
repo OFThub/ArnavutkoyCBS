@@ -24,7 +24,7 @@ export function toPair(position: Position): LngLatPair | null {
 export interface DrawSessionOptions {
   mode: DrawMode
   color?: string
-  onChange?: (feature: DrawFeature | null, vertexCount: number) => void
+  onChange?: (feature: DrawFeature | null, vertices: LngLatPair[]) => void
   onFinish?: (feature: DrawFeature | null) => void
 }
 
@@ -33,6 +33,9 @@ export interface DrawSession {
   undo(): void
   reset(): void
   destroy(): void
+  /** Köşeleri dışarıdan yazar: koordinat tablosuyla düzenleme ve kayıtlı geometriyi düzenlemeye alma. */
+  setVertices(next: LngLatPair[], finished?: boolean): void
+  getVertices(): LngLatPair[]
 }
 
 const SOURCE_ID = 'cizim'
@@ -88,7 +91,7 @@ export function startDrawSession(
     })
     data = { type: 'FeatureCollection', features }
     if (map.getSource(SOURCE_ID)) upsertGeoJsonSource(map, SOURCE_ID, data)
-    if (notify) options.onChange?.(resultFeature(), vertices.length)
+    if (notify) options.onChange?.(resultFeature(), [...vertices])
   }
 
   const apply = (target: MapLibreMap): void => {
@@ -182,14 +185,12 @@ export function startDrawSession(
     if (typeof index !== 'number') return
     event.preventDefault()
     dragIndex = index
-    map.dragPan.disable()
     map.getCanvas().style.cursor = 'grabbing'
   }
 
   const onMouseUp = (): void => {
     if (dragIndex === null) return
     dragIndex = null
-    map.dragPan.enable()
     map.getCanvas().style.cursor = finished ? '' : 'crosshair'
     if (finished) options.onFinish?.(resultFeature())
   }
@@ -221,6 +222,8 @@ export function startDrawSession(
   overlays.register({ id: SOURCE_ID, order: OVERLAY_ORDER.tool, apply, dispose })
 
   map.doubleClickZoom.disable()
+  // Küçük bir sürükleme bile haritayı kaydırırsa tıklama asla vertex olarak sayılmaz; oturum boyunca kapalı tutulur.
+  map.dragPan.disable()
   map.getCanvas().style.cursor = 'crosshair'
   map.on('click', onClick)
   map.on('mousemove', onMouseMove)
@@ -236,6 +239,17 @@ export function startDrawSession(
     finish,
     undo,
     reset,
+    setVertices(next, nextFinished) {
+      vertices = options.mode === 'point' ? next.slice(0, 1) : [...next]
+      hover = null
+      if (nextFinished !== undefined) finished = nextFinished
+      map.getCanvas().style.cursor = finished ? '' : 'crosshair'
+      render(true)
+      if (finished) options.onFinish?.(resultFeature())
+    },
+    getVertices() {
+      return [...vertices]
+    },
     destroy() {
       map.off('click', onClick)
       map.off('mousemove', onMouseMove)

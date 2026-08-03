@@ -61,6 +61,7 @@ export const DATASETS = {
   manifest: '/data/manifest.json',
   district: '/data/district.geojson',
   mahalle: '/data/mahalle.geojson',
+  mahalleNufus: '/data/mahalle-nufus.json',
   depremSenaryo: '/data/deprem-senaryo.json',
   acilUlasimYolu: '/data/acil-ulasim-yolu.geojson',
   saglikKurumu: '/data/saglik-kurumu.geojson',

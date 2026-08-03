@@ -5,8 +5,10 @@ import { benchmarkTool } from './BenchmarkTool'
 import { bufferTool } from './BufferTool'
 import { coordinateTool } from './CoordinateTool'
 import { fieldTool } from './FieldTool'
+import { imarTool } from './ImarTool'
 import { importTool } from './ImportTool'
 import { inspectorTool } from './InspectorTool'
+import { mahalleTool } from './MahalleTool'
 import { measureTool } from './MeasureTool'
 import { numberingTool } from './NumberingTool'
 import { panoramaTool } from './PanoramaTool'
@@ -30,6 +32,8 @@ const tools: ToolModule[] = [
   numberingTool,
   panoramaTool,
   workspaceTool,
+  imarTool,
+  mahalleTool,
   importTool,
   fieldTool,
   benchmarkTool,

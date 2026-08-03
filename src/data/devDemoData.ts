@@ -37,7 +37,16 @@ const IMAR_LEKESI: Row[] = [
   { fonksiyon: 'saglik', taks: 0.3, kaks: 1.2, hmax: 18.5, geom: { type: 'Polygon', coordinates: [square(-0.008, 0.008, 0.0035)] } },
   { fonksiyon: 'yesil-alan', taks: 0.05, kaks: 0.1, hmax: 6.5, geom: { type: 'Polygon', coordinates: [square(0.006, 0.008, 0.0045)] } },
   { fonksiyon: 'tarim', taks: 0.02, kaks: 0.05, hmax: 6.5, geom: { type: 'Polygon', coordinates: [square(0.02, 0.008, 0.006)] } },
+  { fonksiyon: 'dini-tesis', taks: 0.25, kaks: 0.5, hmax: 24.5, kat_adedi: 2, yapi_nizami: 'ayrik', ada: '1520', parsel: '7', geom: { type: 'Polygon', coordinates: [square(0.02, 0.02, 0.005)] } },
 ].map((row) => ({ id: nextId('imar-lekesi'), ...row }))
+
+// Yukarıdaki dini tesis lekesinin (0.02, 0.02) içine düşen alt yapılar.
+const IMAR_TESISI: Row[] = [
+  { tur: 'cami', ad: 'Demo Merkez Camii', alan_m2: 1200, kapasite: 750, durum: 'planlanan', yil: 2027, geom: { type: 'Polygon', coordinates: [square(0.0185, 0.0212, 0.0012)] } },
+  { tur: 'otopark', ad: 'Cami otoparkı', alan_m2: 420, kapasite: 40, durum: 'planlanan', yil: 2028, geom: { type: 'Polygon', coordinates: [square(0.0215, 0.0212, 0.0009)] } },
+  { tur: 'kutuphane', ad: 'Demo Semt Kütüphanesi', alan_m2: 380, kapasite: 120, durum: 'mevcut', yil: 2019, geom: { type: 'Polygon', coordinates: [square(0.0185, 0.0186, 0.0009)] } },
+  { tur: 'cocuk-bahcesi', ad: 'Demo Çocuk Bahçesi', alan_m2: 260, durum: 'yapim_asamasinda', yil: 2026, geom: { type: 'Polygon', coordinates: [square(0.0215, 0.0186, 0.0008)] } },
+].map((row) => ({ id: nextId('imar-tesisi'), ...row }))
 
 const IMAR_UYGULAMA_ALANI: Row[] = [
   {
@@ -118,6 +127,7 @@ const ASKIDAKI_IMAR_PLANI: Row[] = [
 
 export const DEV_DEMO_DATA: Record<string, Row[]> = {
   'imar-lekesi': IMAR_LEKESI,
+  'imar-tesisi': IMAR_TESISI,
   'imar-uygulama-alani': IMAR_UYGULAMA_ALANI,
   numarataj: NUMARATAJ,
   'yol-rayic': YOL_RAYIC,

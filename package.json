@@ -26,8 +26,10 @@
     "data:ilceler": "tsx scripts/ingest/07-komsu-ilceler.ts",
     "data:durak": "tsx scripts/ingest/08-iett-durak.ts",
     "data:toplanma": "tsx scripts/ingest/09-toplanma-alani.ts",
+    "admin:create": "tsx scripts/create-admin.ts",
     "icons": "tsx scripts/generate-icons.ts",
-    "fonts": "tsx scripts/fetch-fonts.ts"
+    "fonts": "tsx scripts/fetch-fonts.ts",
+    "data:nufus": "tsx scripts/ingest/10-mahalle-nufus.ts"
   },
   "dependencies": {
     "@mantine/charts": "^8.3.14",
@@ -47,6 +49,7 @@
     "zustand": "^5.0.14"
   },
   "devDependencies": {
+    "@maplibre/maplibre-gl-style-spec": "^26.2.1",
     "@types/d3-contour": "^3.0.6",
     "@types/geojson": "^7946.0.16",
     "@types/node": "^24.10.1",

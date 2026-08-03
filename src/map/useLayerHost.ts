@@ -13,6 +13,7 @@ export function useLayerHost(): void {
   const visibleLayers = useAppStore((state) => state.visibleLayers)
   const layerOpacity = useAppStore((state) => state.layerOpacity)
   const devMode = useAppStore((state) => state.devMode)
+  const dataVersion = useAppStore((state) => state.dataVersion)
   const visibleRef = useRef(visibleLayers)
   visibleRef.current = visibleLayers
   const opacityRef = useRef(layerOpacity)
@@ -27,7 +28,8 @@ export function useLayerHost(): void {
       registered.clear()
     }
     // devMode değişince kurumsal katmanlar örnek/gerçek veri arasında geçiş yapabilsin diye tüm katmanlar yeniden kurulur.
-  }, [map, overlays, ready, role, devMode])
+    // dataVersion aynı mekanizmayı kurumsal veriye yazıldıktan sonra tazeleme için kullanır.
+  }, [map, overlays, ready, role, devMode, dataVersion])
 
   useEffect(() => {
     if (!map || !overlays || !ready) return
@@ -63,7 +65,7 @@ export function useLayerHost(): void {
 
       module.setVisible(map, visible)
     }
-  }, [map, overlays, ready, role, visibleLayers, devMode])
+  }, [map, overlays, ready, role, visibleLayers, devMode, dataVersion])
 
   // Kaydırıcı değişimi: yalnızca boya özelliğini günceller, katmanı yeniden kurmaz.
   useEffect(() => {

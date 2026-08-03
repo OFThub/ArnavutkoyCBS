@@ -22,6 +22,15 @@ export interface SupabaseLayerSpec {
   color: string
   colorBy?: { field: string; values: Record<string, string> }
   labelField?: string
+  /** Zengin etiket; verilirse `labelField`in yerine geçer. `text` bir MapLibre ifadesidir. */
+  label?: {
+    text: unknown
+    minzoom?: number
+    size?: number
+    color?: string
+    /** Çakışsa da gizlenmesin — plan bilgisi haritada daima okunmalıysa açılır. */
+    allowOverlap?: boolean
+  }
   /** Satır sayısı üst sınırı; tarayıcıya sığmayacak tabloları korur. */
   limit?: number
   /** `eq` filtresi — ör. yalnızca askıdaki planlar. */
@@ -67,6 +76,10 @@ export function rowsToCollection(rows: Row[]): { collection: FeatureCollection; 
   return { collection: { type: 'FeatureCollection', features }, atlanan }
 }
 
+function labelFromField(field: string): unknown {
+  return ['coalesce', ['get', field], '']
+}
+
 function colorExpression(spec: SupabaseLayerSpec): unknown {
   if (!spec.colorBy) return spec.color
   const match: unknown[] = ['match', ['get', spec.colorBy.field]]
@@ -97,7 +110,8 @@ export function supabaseLayer(spec: SupabaseLayerSpec): LayerModule {
   const sourceId = `kurumsal-${spec.id}`
   const mainLayer = `${sourceId}-${spec.shape}`
   const labelLayer = `${sourceId}-etiket`
-  const paintLayers = spec.labelField ? [mainLayer, labelLayer] : [mainLayer]
+  // Etiket katmanı da görünürlük ve opaklık kontrolüne dahil olmalı; `label` veya `labelField` fark etmez.
+  const paintLayers = spec.label ?? spec.labelField ? [mainLayer, labelLayer] : [mainLayer]
 
   return {
     id: spec.id,
@@ -162,26 +176,37 @@ export function supabaseLayer(spec: SupabaseLayerSpec): LayerModule {
         paint: paintFor(spec.shape, colorExpression(spec)),
       } as AddLayerObject)
 
-      if (spec.labelField) {
+      const textField = spec.label?.text ?? (spec.labelField ? labelFromField(spec.labelField) : null)
+
+      if (textField) {
+        // Alan katmanlarında etiket poligonun ortasına oturur; nokta/çizgide simgenin altına kaçar.
+        const ortada = spec.shape === 'fill'
         upsertLayer(map, {
           id: labelLayer,
           type: 'symbol',
           source: sourceId,
-          minzoom: 14,
+          minzoom: spec.label?.minzoom ?? 14,
           layout: {
-            'text-field': ['coalesce', ['get', spec.labelField], ''],
+            'text-field': textField,
             'text-font': LABEL_FONT,
-            'text-size': 11,
-            'text-anchor': 'top',
-            'text-offset': [0, 0.8],
-            'text-max-width': 12,
+            'text-size': spec.label?.size ?? 11,
+            'text-anchor': ortada ? 'center' : 'top',
+            'text-offset': ortada ? [0, 0] : [0, 0.8],
+            'text-max-width': 14,
+            'text-line-height': 1.15,
+            // İmar paftasında bilgi çakışma yüzünden kaybolmamalı; opt-in bırakılır ki
+            // yoğun nokta katmanları (numarataj) eskisi gibi seyreltilmeye devam etsin.
+            'text-allow-overlap': spec.label?.allowOverlap ?? false,
+            'text-ignore-placement': spec.label?.allowOverlap ?? false,
           },
           paint: {
-            'text-color': spec.color,
+            // Dolgu üstünde okunurluk için nötr koyu; halo her iki temada da metni ayırıyor.
+            'text-color': spec.label?.color ?? (ortada ? '#10151C' : spec.color),
             'text-halo-color': '#ffffff',
-            'text-halo-width': 1.4,
+            'text-halo-width': 1.6,
           },
-        })
+          // `text-field` ifadesi spec'ten çalışma zamanında geliyor; stil şeması tipi burada daraltılır.
+        } as AddLayerObject)
       }
     },
 

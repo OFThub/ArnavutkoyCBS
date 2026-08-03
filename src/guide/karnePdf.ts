@@ -2,6 +2,7 @@
 
 import { DISTRICT } from '../config/district'
 import { formatDistance } from '../core/format'
+import { formatAlan, formatKisi, formatYogunluk } from '../core/nufus'
 import type { MahalleKarne } from './guideScore'
 
 function mesafe(value: number | null): string {
@@ -25,10 +26,13 @@ export async function exportKarnePdf(karne: MahalleKarne): Promise<string> {
   // Antet: karnenin kimlik bloğu.
   let y = 36
   doc.setDrawColor(120)
-  doc.rect(16, y, 82, 30)
+  doc.rect(16, y, 82, 51)
   const antet: [string, string][] = [
     ['UAVT', karne.uavt],
-    ['Konum', `${karne.merkez[1].toFixed(4)} / ${karne.merkez[0].toFixed(4)}`],
+    ['Nüfus', formatKisi(karne.nufus.nufus) + (karne.nufus.tahmini ? ' (tahmini)' : '')],
+    ['Yüzölçümü', formatAlan(karne.nufus.alanKm2)],
+    ['Yoğunluk', formatYogunluk(karne.nufus.yogunlukKisiKm2)],
+    ['Yoğunluk sınıfı', karne.nufus.sinif?.label ?? '—'],
     ['Genel puan', `${karne.genelPuan} / 100`],
   ]
   doc.setFontSize(8)
@@ -39,7 +43,7 @@ export async function exportKarnePdf(karne: MahalleKarne): Promise<string> {
     if (index < antet.length - 1) doc.line(16, satirY + 2.5, 98, satirY + 2.5)
   })
 
-  y += 40
+  y += 61
   const bolumler: [string, number, [string, string][]][] = [
     [
       'Deprem (İBB senaryosu)',

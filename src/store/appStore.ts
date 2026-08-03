@@ -11,6 +11,7 @@ export const DEFAULT_VISIBLE_LAYERS = [
   'calisma-alani-maske',
   'komsu-ilceler',
   'ilce-maske',
+  'mahalle-sinir',
   'ilce-sinir',
 ]
 
@@ -29,6 +30,8 @@ interface AppState {
   lastResult: AnalysisResult | null
   sketch: Feature[]
   devMode: boolean
+  /** Kurumsal veriye yazıldığında artar; katman sunucusu bunu görüp katmanları yeniden kurar. */
+  dataVersion: number
   setSession: (session: Session | null) => void
   setBasemap: (basemap: BasemapId) => void
   toggleLayer: (id: string, visible?: boolean) => void
@@ -36,6 +39,7 @@ interface AppState {
   setLayerOpacity: (id: string, opacity: number) => void
   setActiveTool: (id: string | null) => void
   setDevMode: (enabled: boolean) => void
+  bumpDataVersion: () => void
   setTerrain3d: (enabled: boolean) => void
   setBuilding3d: (enabled: boolean) => void
   setTerrainExaggeration: (value: number) => void
@@ -63,6 +67,7 @@ export const useAppStore = create<AppState>((set) => ({
   lastResult: null,
   sketch: [],
   devMode: false,
+  dataVersion: 0,
   setSession: (session) => set({ session, role: roleFromSession(session) }),
   setBasemap: (basemap) => set({ basemap }),
   toggleLayer: (id, visible) =>
@@ -81,6 +86,7 @@ export const useAppStore = create<AppState>((set) => ({
     set((state) => ({ layerOpacity: { ...state.layerOpacity, [id]: opacity } })),
   setActiveTool: (activeToolId) => set({ activeToolId }),
   setDevMode: (devMode) => set({ devMode }),
+  bumpDataVersion: () => set((state) => ({ dataVersion: state.dataVersion + 1 })),
   setTerrain3d: (terrain3d) => set({ terrain3d }),
   setBuilding3d: (building3d) => set({ building3d }),
   setTerrainExaggeration: (terrainExaggeration) => set({ terrainExaggeration }),

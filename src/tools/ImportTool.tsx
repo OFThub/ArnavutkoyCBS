@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Alert, Button, Divider, FileInput, Select, Stack, Switch, Text } from '@mantine/core'
 import { notifications } from '@mantine/notifications'
 import type { Feature, FeatureCollection } from 'geojson'
+import { toEwkt, toMultiPolygon } from '../core/imar'
 import { supabase } from '../lib/supabase'
 import { useAppStore } from '../store/appStore'
 import type { ToolModule } from './types'
@@ -14,20 +15,54 @@ interface Hedef {
   /** GeoJSON özelliğinden tabloya taşınacak sütunlar; gerisi yok sayılır. */
   columns: string[]
   zorunlu: string[]
+  /** Sütun `geometry(MultiPolygon,…)` ise Polygon geometriler sarmalanmadan yazılamaz. */
+  multiPolygon?: boolean
+  /** Kayıt zaten varsa güncellenir; bu sütun çakışma anahtarıdır (ör. mahalle.uavt_kod). */
+  upsertKey?: string
+  /** Öznitelik güncellemesi geometri gerektirmez; geometrisiz kayıtlar atlanmaz. */
+  geometrisizKabul?: boolean
 }
 
 const HEDEFLER: Hedef[] = [
   {
+    table: 'mahalle',
+    label: 'Mahalle nüfus / hane',
+    columns: ['uavt_kod', 'ad', 'nufus', 'hane', 'veri_yili', 'nufus_kaynak'],
+    zorunlu: ['uavt_kod'],
+    upsertKey: 'uavt_kod',
+    // Nüfus tablosu genelde geometrisiz gelir; mevcut mahalle geometrisi korunur.
+    geometrisizKabul: true,
+  },
+  {
     table: 'imar_lekesi',
     label: 'İmar lekesi',
-    columns: ['plan_id', 'fonksiyon', 'taks', 'kaks', 'hmax'],
+    columns: [
+      'plan_id',
+      'fonksiyon',
+      'taks',
+      'kaks',
+      'hmax',
+      'kat_adedi',
+      'yapi_nizami',
+      'ada',
+      'parsel',
+      'plan_notu',
+    ],
     zorunlu: ['plan_id', 'fonksiyon'],
+    multiPolygon: true,
+  },
+  {
+    table: 'imar_tesisi',
+    label: 'İmar tesisi (leke içi)',
+    columns: ['leke_id', 'tur', 'ad', 'alan_m2', 'kapasite', 'durum', 'yil', 'aciklama'],
+    zorunlu: ['leke_id', 'tur'],
   },
   {
     table: 'imar_uygulama_alani',
     label: 'İmar uygulama alanı',
     columns: ['ad', 'uygulama_turu', 'encumen_karar_no', 'karar_tarihi', 'durum', 'plan_id'],
     zorunlu: ['ad'],
+    multiPolygon: true,
   },
   {
     table: 'proje',
@@ -83,13 +118,21 @@ export function prepareRows(features: Feature[], hedef: Hedef): Hazirlik {
   let geometrisiz = 0
 
   for (const feature of features) {
-    if (!feature.geometry) {
+    const geometry =
+      hedef.multiPolygon && feature.geometry?.type === 'Polygon'
+        ? toMultiPolygon(feature.geometry)
+        : feature.geometry
+
+    // PostGIS `geometry_in` GeoJSON kabul etmez; yazma yolunda daima EWKT gönderilir.
+    const geom = toEwkt(geometry)
+    if (!geom && !hedef.geometrisizKabul) {
       geometrisiz += 1
       continue
     }
 
     const props = feature.properties ?? {}
-    const row: Record<string, unknown> = { geom: feature.geometry }
+    // Geometrisiz güncellemede `geom` hiç yazılmaz; mevcut geometri silinmemeli.
+    const row: Record<string, unknown> = geom ? { geom } : {}
     for (const column of hedef.columns) {
       if (props[column] !== undefined && props[column] !== '') row[column] = props[column]
     }
@@ -174,10 +217,11 @@ function ImportPanel() {
       }
 
       for (let index = 0; index < rows.length; index += BATCH) {
-        const { error: insertError } = await supabase
-          .from(hedef.table)
-          .insert(rows.slice(index, index + BATCH))
-        if (insertError) throw new Error(insertError.message)
+        const dilim = rows.slice(index, index + BATCH)
+        const { error: yazmaHatasi } = hedef.upsertKey
+          ? await supabase.from(hedef.table).upsert(dilim, { onConflict: hedef.upsertKey })
+          : await supabase.from(hedef.table).insert(dilim)
+        if (yazmaHatasi) throw new Error(yazmaHatasi.message)
       }
 
       const atlanan = eksikZorunlu + geometrisiz
@@ -187,7 +231,7 @@ function ImportPanel() {
         message:
           `${rows.length} kayıt yazıldı` +
           (atlanan > 0
-            ? ` · ${geometrisiz} geometrisiz, ${eksikZorunlu} zorunlu alanı eksik kayıt atlandı`
+            ? ` · ${geometrisiz} geometrisi okunamayan, ${eksikZorunlu} zorunlu alanı eksik kayıt atlandı`
             : ''),
       })
       setFile(null)
