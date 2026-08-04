@@ -17,5 +17,6 @@
     "composite": true,
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo"
   },
-  "include": ["vite.config.ts", "vitest.config.ts", "scripts"]
+  // printFont: staj raporu PDF üreticisi, uygulamanın Yazdır aracıyla aynı gömülü Türkçe fontu kullanır.
+  "include": ["vite.config.ts", "vitest.config.ts", "scripts", "src/tools/printFont.ts"]
 }

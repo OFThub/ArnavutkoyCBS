@@ -29,7 +29,8 @@
     "admin:create": "tsx scripts/create-admin.ts",
     "icons": "tsx scripts/generate-icons.ts",
     "fonts": "tsx scripts/fetch-fonts.ts",
-    "data:nufus": "tsx scripts/ingest/10-mahalle-nufus.ts"
+    "data:nufus": "tsx scripts/ingest/10-mahalle-nufus.ts",
+    "docs:pdf": "tsx scripts/staj-raporu-pdf.ts"
   },
   "dependencies": {
     "@mantine/charts": "^8.3.14",

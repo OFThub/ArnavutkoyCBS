@@ -5,6 +5,7 @@
 ## İçindekiler
 
 1. [Vatandaş — Taşınmadan önce mahalle araştırması](#senaryo-1-vatandaş--taşınmadan-önce-mahalle-araştırması)
+   - [1B — İki mahalleyi yan yana karşılaştırma](#senaryo-1b-vatandaş--iki-mahalleyi-yan-yana-karşılaştırma)
 2. [Ziyaretçi — Haritada gezinme ve mesafe ölçümü](#senaryo-2-ziyaretçi--haritada-gezinme-ve-mesafe-ölçümü)
 3. [Personel — İmar uyumsuzluğu / kaçak yapı tespiti](#senaryo-3-personel--imar-uyumsuzluğu--kaçak-yapı-tespiti)
 4. [Personel — Kazı ruhsatı çakışma kontrolü](#senaryo-4-personel--kazı-ruhsatı-çakışma-kontrolü)
@@ -12,6 +13,8 @@
 6. [Afet yönetimi — Tahliye/toplanma kapasitesi analizi](#senaryo-6-afet-yönetimi--tahliyetoplanma-kapasitesi-analizi)
 7. [Saha ekibi — Arazide GPS ile iz kaydı](#senaryo-7-saha-ekibi--arazide-gps-ile-iz-kaydı)
 8. [Personel — Yeni imar verisini içe aktarma](#senaryo-8-personel--yeni-imar-verisini-içe-aktarma)
+   - [8B — İmar planını elle çizme ve içine cami işleme](#senaryo-8b-personel--imar-planını-elle-çizme-ve-içine-cami-işleme)
+   - [8C — Mahalle nüfusunu güncelleme](#senaryo-8c-personel--mahalle-nüfusunu-güncelleme)
 9. [Vatandaş — Beyan/vergi öncesi taşkın riski kontrolü](#senaryo-9-vatandaş--taşkın-riski-kontrolü)
 10. [Sistem yöneticisi — Sıfırdan kurulum ve ilk veri yüklemesi](#senaryo-10-sistem-yöneticisi--sıfırdan-kurulum-ve-ilk-veri-yüklemesi)
 
@@ -28,11 +31,29 @@
 2. Üstteki arama kutusuna mahalle adının ilk birkaç harfini yazar, listeden mahalleyi seçer.
 3. Sayfa, o mahallenin **genel puanını** (0–100) ve 38 mahalle arasındaki sırasını gösterir.
 4. "Taşınmadan önce" kontrol listesini okur — örneğin "Bu mahallede en yakın hastaneye mesafe 3.200 m (eşik: 3.000 m)" gibi otomatik üretilmiş bir uyarı görür.
-5. Dört bölüm kartını (Deprem, Erişim, Hizmet, Altyapı) inceleyerek hangi alt puanın düşük olduğunu anlar.
+5. Beş bölüm kartını (Nüfus ve alan, Deprem, Erişim, Hizmet, Altyapı) inceleyerek hangi alt puanın düşük olduğunu anlar. Nüfus kartındaki rozetten mahallenin *Seyrek* olduğunu, ilçe ortalamasının %38'i yoğunlukta olduğunu görür — sakin bir yer arıyorsa bu bilgi işine yarar. Kartta bu bölümün puanlanmadığı yazılıdır.
 6. Kararını desteklemek için "Karneyi PDF indir" düğmesine basar, dosyayı bilgisayarına kaydeder.
 7. Merak ettiği başka bir mahalleyi de aynı şekilde karşılaştırmak için arama kutusundan yeni bir seçim yapar (sayfa yeniden yüklenmeden anında güncellenir).
 
 **Sonuç**: Vatandaş, resmî bir imar/tapu belgesi olmayan ama İBB açık verisine dayanan somut göstergelerle bilgilenmiş bir karar verir; PDF'i saklayarak veya paylaşarak karşılaştırma yapabilir.
+
+---
+
+## Senaryo 1B: Vatandaş — İki mahalleyi yan yana karşılaştırma
+
+**Aktör**: İki mahalle arasında kalmış, hangisine taşınacağına karar veremeyen bir vatandaş.
+**Amaç**: Aynı göstergeleri yan yana görüp somut farkı anlamak.
+
+**Adımlar:**
+1. `/rehber` sayfasında aşağı inip **Mahalleleri karşılaştır** bölümüne gelir. Sayfa açıldığında ilçenin en yoğun ve en seyrek mahallesi zaten karşılaştırmaya konmuştur; bunları `×` ile kaldırır.
+2. Sıralama tablosunda **Nüfus yoğunluğu** başlığına tıklar; 38 mahalle en yoğundan seyreğe sıralanır. Her mahallenin yanındaki rozet (*Kırsal / Seyrek / Orta / Yoğun*) tek bakışta durumu söyler.
+3. **Hastane mesafesi** başlığına tıklar — bu sefer en yakından uzağa sıralanır (düşük değer iyi olduğu için sıralama otomatik doğru yöne açılır). Verisi olmayan mahalleler en iyi sayılmaz, listenin sonunda kalır.
+4. İlgilendiği iki mahallenin satırına tıklayarak karşılaştırmaya ekler.
+5. Alttaki yan yana tabloda, gruplar hâlinde (Genel, Nüfus ve alan, Deprem, Erişim, Hizmetler, Altyapı) tüm göstergeleri sütun sütun görür. Her satırda hangi mahallenin daha iyi olduğu **▲** ile işaretlidir: örneğin genel puanda biri, hastane mesafesinde diğeri öndedir.
+6. **Nüfus ve alan** grubunda hiçbir ▲ olmadığını fark eder; grup başlığında "puanlanmaz" yazar. Yoğunluk farkını ham değer olarak (4.419 kişi/km² ↔ 11 kişi/km²) ve "ilçe ortalamasının 6,3 katı" ↔ "ilçe ortalamasının %2'si" olarak okur, kararı kendi verir.
+7. İsterse üçüncü bir mahalle daha ekler (en fazla 3).
+
+**Sonuç**: Vatandaş, tek tek mahalle değiştirip not almak yerine farkı tek ekranda görür. Nüfus yoğunluğu gibi öznel göstergeler karar verirken görünür ama "kazanan" ilan edilmez — sistem, iyi/kötü hükmü veremeyeceği yerde hüküm vermez.
 
 ---
 
@@ -167,6 +188,49 @@
 
 ---
 
+## Senaryo 8B: Personel — İmar planını elle çizme ve içine cami işleme
+
+**Aktör**: Elinde dijital dosya olmayan, yeni onaylanan bir plan paftasını sisteme işleyecek İmar Müdürlüğü personeli.
+**Amaç**: Dini tesis alanını haritada çizmek ve içine planlanan camiyi künyesiyle birlikte kaydetmek.
+
+**Adımlar:**
+1. Personel girişi yapar, **Araçlar → İmar planı düzenle** aracını açar.
+2. Plan listesinde ilgili plan yoksa **+ Yeni plan** ile açar: ad "Merkez Revizyon İmar Planı", ölçek "1/1000", durum "yürürlükte", onay tarihi. **Planı oluştur** der.
+3. *İmar lekesi* sekmesinde haritada dini tesis alanının köşelerine tıklar, `Enter` ile bitirir. Bir köşeyi yanlış koyduğunu fark eder — köşe tablosundaki o satırın enlem değerini paftadaki değerle **elle düzeltir**; harita anında güncellenir.
+4. Alternatif olarak paftadaki koordinat listesini **Toplu yapıştır** kutusuna satır satır yapıştırır; DMS formatındaki değerler de sorunsuz okunur.
+5. Fonksiyon olarak "Dini tesis", ada `1520`, parsel `7`, KAKS `0.5`, TAKS `0.25`, Hmax `24.5`, kat adedi `2` girer. Panel altında çizimden hesaplanan alanı görür. **Lekeyi kaydet** der.
+6. *Leke içi tesis* sekmesine geçer, listeden az önce kaydettiği dini tesis lekesini üst leke olarak seçer.
+7. Caminin oturacağı alanı lekenin içine çizer. Tür "Cami", ad "Merkez Camii", kapasite `750`, durum "Planlanan", yıl `2027` girer. Alan kutusunu boş bırakır — çiziminden hesaplanan değer kaydedilir.
+8. Yanlışlıkla caminin bir köşesini lekenin dışına taşırmıştır; araç sarı uyarı verir ama kaydeder. Personel geri dönüp köşeyi düzeltir.
+9. **Katmanlar → Mülkiyet** altından *İmar tesisleri (leke içi)* katmanını açar. Haritada, çizimin tam üstünde künyeyi okur:
+   ```
+   Merkez Camii
+   Cami · 1200 m² · 750 kişi
+   Planlanan · 2027
+   ```
+10. İleride cami yapıldığında aynı araçtan kaydı açıp durumu "Mevcut", yılı gerçek yapım yılı yapar; harita rengi mavi (planlanan) yerine yeşil (mevcut) olur.
+
+**Sonuç**: Dosya hazırlamaya gerek kalmadan plan verisi sisteme girer. Ada/parsel, yapılaşma koşulları ve plan içindeki tesisler tek yerde tutulur; "bu alana ne yapılacak, ne kadar yer kaplayacak, hangi yıl" sorusunun cevabı haritada okunur.
+
+---
+
+## Senaryo 8C: Personel — Mahalle nüfusunu güncelleme
+
+**Aktör**: TÜİK'in yeni ADNKS tablosunu eline alan Strateji Geliştirme personeli.
+**Amaç**: Karne sayfasındaki tahmini nüfus değerlerini gerçek veriyle değiştirmek.
+
+**Adımlar:**
+1. Personel girişi yapar. **Araçlar → Mahalle bilgileri** aracını açar.
+2. Listeden mahalleyi seçer. Form o mahallenin mevcut kaydıyla dolar.
+3. TÜİK tablosundaki nüfusu ve hane sayısını girer, veri yılını `2025`, kaynağı `TÜİK ADNKS` yazar.
+4. Yazarken panelin altında yüzölçümünü (geometriden), hesaplanan yoğunluğu ve yoğunluk sınıfını canlı görür — girdiği rakamın makul olup olmadığını anında kontrol edebilir.
+5. **Kaydet** der. Diğer 37 mahalle için tekrarlar; ya da tabloyu GeoJSON'a çevirip **Veri içe aktar → Mahalle nüfus / hane** hedefiyle topluca yükler (mevcut kayıtlar güncellenir, mükerrer kayıt oluşmaz).
+6. `/rehber` sayfasını açar: sayfanın üstündeki sarı "nüfus tahminidir" uyarısının kaybolduğunu, nüfus kartlarındaki *TAHMİNİ* etiketinin yerini `TÜİK ADNKS · 2025` kaynak satırının aldığını görür.
+
+**Sonuç**: Karne, sıralama tablosu ve yan yana karşılaştırma artık gerçek nüfusla çalışır. Tahmin ile gerçek veri arayüzde birbirine karışmaz; hangi mahallenin verisi güncellenmiş, hangisi hâlâ tahmini, tek bakışta ayırt edilir.
+
+---
+
 ## Senaryo 9: Vatandaş — Taşkın riski kontrolü
 
 **Aktör**: Ev/arsa satın almadan önce taşkın riskini merak eden bir vatandaş.
@@ -197,7 +261,7 @@
 5. `npm run data:build` komutuyla resmî veriyi indirip `public/data/` altına normalize eder (Nominatim, İBB CKAN, Overpass kaynaklarından); süreç sonunda her veri setinin kaç kayıt içerdiğini gösteren bir özet alır.
 6. `npm run fonts` ve `npm run icons` ile yazı tiplerini ve PWA ikonlarını üretir (yalnızca bir kere gerekir).
 7. `npm run build` ile üretim paketini oluşturur, `npm run preview` ile yerelde doğrular.
-8. `npm run typecheck` ve `npm run test` ile (184 test) her şeyin yeşil olduğunu teyit eder.
+8. `npm run typecheck` ve `npm run test` ile (241 test) her şeyin yeşil olduğunu teyit eder.
 9. `dist/` klasörünü barındırma sağlayıcısına (Vercel/Netlify/nginx) yükler; SPA geri düşüş kuralının (`vercel.json` / `public/_redirects` / nginx `try_files`) etkin olduğundan emin olur — aksi halde `/rehber` adresi doğrudan açıldığında 404 alınır.
 10. Supabase Auth panelinden ilk personel/yönetici hesabını oluşturup `app_metadata.rol` alanını elle ayarlar.
 

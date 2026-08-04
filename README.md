@@ -5,7 +5,7 @@ Arnavutköy Belediyesi için geliştirilen, tarayıcı üzerinde çalışan bir 
 İki sayfa sunar:
 
 - **`/` — CBS tezgâhı.** Tam ekran harita, sol enstrüman rayı, katman/araç/analiz panelleri. Rol tabanlı: ziyaretçi kamu katmanlarını, personel mülkiyet ve imar katmanlarını görür.
-- **`/rehber` — Mahalle karnesi.** Vatandaşa dönük kamu sayfası: bir mahalleye taşınmadan önce bakılan göstergeler (deprem senaryosu, günlük ihtiyaçlara mesafe, mahalledeki hizmetler, altyapı hasar beklentisi) 0–100 puanlı bir karne olarak sunulur, giriş gerektirmez.
+- **`/rehber` — Mahalle karnesi.** Vatandaşa dönük kamu sayfası: bir mahalleye taşınmadan önce bakılan göstergeler (deprem senaryosu, günlük ihtiyaçlara mesafe, mahalledeki hizmetler, altyapı hasar beklentisi) 0–100 puanlı bir karne olarak sunulur, giriş gerektirmez. Nüfus/yüzölçümü/yoğunluk bilgisi ve 38 mahalleyi kıyaslayan sıralama + yan yana karşılaştırma da aynı sayfadadır.
 
 Uygulama tek sayfalık (SPA) olduğu için `/rehber` adresinin doğrudan açılabilmesi sunucu tarafında bir geri düşüş kuralı ister. Netlify için `public/_redirects`, Vercel için `vercel.json` depo içinde hazır bulunur. nginx kullanıyorsanız: `try_files $uri $uri/ /index.html;`
 
@@ -37,11 +37,13 @@ Backend (Supabase) yapılandırılmamışsa uygulama otomatik olarak **"salt-kam
 
 ## Özellikler
 
-- 🗺️ **33 harita katmanı** — topografya (yükselti, eğim, bakı, hillshade, kontur), kent (bina, yol, su, POI, sağlık kurumu), altyapı, mülkiyet/imar ve afet risk katmanları.
-- 🛠️ **15 interaktif araç** — ölçüm, tampon, çizim, bilgi sorgulama, koordinat, yükselti profili, paylaşım, numarataj, panorama (Mapillary), çalışma alanı kaydetme, veri içe aktarma, saha modu (GNSS), başarım testi, yazdırma (PDF).
+- 🗺️ **35 harita katmanı** — topografya (yükselti, eğim, bakı, hillshade, kontur), kent (bina, yol, su, POI, sağlık kurumu), mahalle sınırları, altyapı, mülkiyet/imar ve afet risk katmanları.
+- 🛠️ **17 interaktif araç** — ölçüm, tampon, çizim, bilgi sorgulama, koordinat, yükselti profili, paylaşım, numarataj, panorama (Mapillary), çalışma alanı kaydetme, **imar planı düzenleme**, **mahalle bilgisi girişi**, veri içe aktarma, saha modu (GNSS), başarım testi, yazdırma (PDF).
+- ✏️ **İmar planı düzenleme** — imar lekesini haritaya çizin ya da köşe koordinatlarını tek tek girin (ondalık derece / DMS / toplu yapıştırma, haritayla çift yönlü). Lekenin **içine** cami, okul, park gibi tesisleri künyeleriyle işleyin: ne olacak, kaç m², kaç kişilik, hangi yıl, yapıldı mı yapılacak mı. Künye haritada çizimin üstünde okunur.
 - 📊 **7 mekânsal analiz** — uygun yer seçimi (çok kriterli karar analizi/MCDA), taşkın riski, afet tahliye planı, imar uyumsuzluğu/kaçak yapı tespiti, ulaşım erişilebilirliği, altyapı kazı çakışması, vergi/beyan dışı alan tespiti.
 - 🔐 **Rol tabanlı erişim kontrolü** — hem istemci hem veritabanı (PostgreSQL Row Level Security) seviyesinde uygulanan üç kademeli rol modeli (ziyaretçi / personel / yönetici).
-- 🏘️ **Mahalle Rehberi** — vatandaşa açık, giriş gerektirmeyen, 38 mahalle için otomatik hesaplanan deprem/erişim/hizmet/altyapı karnesi + PDF dışa aktarımı.
+- 🏘️ **Mahalle Rehberi** — vatandaşa açık, giriş gerektirmeyen, 38 mahalle için otomatik hesaplanan nüfus/deprem/erişim/hizmet/altyapı karnesi + PDF dışa aktarımı.
+- ⚖️ **Mahalle karşılaştırma** — 38 mahalle tek tabloda, istediğiniz göstergeye göre sıralanabilir; en fazla 3 mahalleyi yan yana koyup her satırda en iyi değeri görün. Nüfus yoğunluğu *Kırsal → Çok yoğun* ölçeğinde sınıflandırılır ama **puanlanmaz** — yüksek yoğunluk objektif olarak iyi ya da kötü değildir.
 - 📡 **Saha modu** — GNSS/pusula/ivmeölçer sensör füzyonu ile canlı iz kaydı; masaüstünde sentetik tekrar oynatma ile test edilebilir.
 - ⚡ **Başarım testi** — cihazın CPU/GPU/depolama performansını ölçen, Excel/JSON dışa aktarılabilir yerleşik benchmark modülü.
 - 📶 **Tam PWA desteği** — kullanıcı onaylı güncelleme akışı, ince ayarlı Workbox önbellekleme stratejileriyle çevrimdışı çalışma.
@@ -81,7 +83,7 @@ src/
 │                 # harita durumu (URL hash), depolama (IndexedDB), arazi matematiği
 ├── data/         # DEM/yükselti, arama indeksi, OSM anlık görüntüsü, geliştirme demo verisi
 ├── guide/        # "/rehber" mahalle karnesi sayfası + puanlama algoritması + PDF
-├── layers/       # 33 harita katmanı tanımı + üretici (factory) fonksiyonlar
+├── layers/       # 35 harita katmanı tanımı + üretici (factory) fonksiyonlar
 ├── lib/          # Supabase istemci kurulumu
 ├── map/          # MapLibre sarmalayıcıları: Provider, hook'lar, overlay yönetimi
 ├── panels/       # Sol rayda görünen paneller
@@ -90,11 +92,13 @@ src/
 ├── sensors/      # GNSS/pusula/ivmeölçer okuma + sensör füzyonu matematiği
 ├── store/        # Tek Zustand store (appStore.ts)
 ├── theming/      # Koroplet harita, sınıflandırma algoritmaları, tasarım tokenları
-└── tools/        # 15 interaktif harita aracı + kayıt (registry)
+└── tools/        # 17 interaktif harita aracı + kayıt (registry)
 
-supabase/migrations/   # 6 SQL migrasyonu: şema, audit, RLS, güvenlik sertleştirme, kent rehberi
-scripts/ingest/        # 9 adımlı resmî veri indirme/normalize hattı
-scripts/               # generate-icons.ts, fetch-fonts.ts (build-time varlık üretimi)
+supabase/migrations/   # 8 SQL migrasyonu: şema, audit, RLS, güvenlik sertleştirme,
+                       # kent rehberi, imar elle giriş, mahalle nüfus
+scripts/ingest/        # 10 adımlı resmî veri indirme/normalize hattı
+scripts/               # create-admin.ts (hesap açma), staj-raporu-pdf.ts,
+                       # generate-icons.ts, fetch-fonts.ts (build-time varlık üretimi)
 public/data/           # İndirilmiş/normalize edilmiş statik veri (GeoJSON/JSON) + manifest.json
 docs/                  # Ayrıntılı dokümantasyon (bkz. Dokümantasyon bölümü)
 ```
@@ -130,7 +134,7 @@ npm run dev   # http://localhost:5173
 
 ## Veritabanı
 
-Şema; ilçe/mahalle sınırları, deprem senaryosu, kadastro parselleri, binalar, adresler, imar planları/lekeleri, kazı ruhsatları, beyanlar, toplanma alanları, projeler, zemin etütleri, yol rayiç değerleri ve otomatik denetim (audit) izini kapsayan 18 iş tablosundan oluşur. Tüm tablolarda PostgreSQL **Row Level Security** etkindir — rol tabanlı okuma/yazma kuralları veritabanı seviyesinde zorlanır. Ayrıntılar için [docs/API_VE_MIMARI.md §13](docs/API_VE_MIMARI.md#13-veri-katmanı--supabase--postgresql--postgis).
+Şema; ilçe/mahalle sınırları (nüfus/hane künyesiyle), deprem senaryosu, kadastro parselleri, binalar, adresler, imar planları/lekeleri, leke içi tesisler, kazı ruhsatları, beyanlar, toplanma alanları, projeler, zemin etütleri, yol rayiç değerleri ve otomatik denetim (audit) izini kapsayan 18 iş tablosundan oluşur. Tüm tablolarda PostgreSQL **Row Level Security** etkindir — rol tabanlı okuma/yazma kuralları veritabanı seviyesinde zorlanır. Ayrıntılar için [docs/API_VE_MIMARI.md §13](docs/API_VE_MIMARI.md#13-veri-katmanı--supabase--postgresql--postgis).
 
 ```bash
 npx supabase link --project-ref <proje-ref>
@@ -191,12 +195,14 @@ npm run icons
 | `npm run db:push` / `db:reset` / `db:diff` | Supabase migration yönetimi |
 | `npm run data:build` | Tüm veri alım hattını çalıştır |
 | `npm run data:*` | Veri alım hattının tek bir adımını çalıştır (yukarıya bakınız) |
+| `npm run admin:create` | Yönetici/personel hesabı açar (service_role anahtarı gerektirir) |
+| `npm run docs:pdf` | Staj raporunu PDF olarak üretir (`docs/STAJ_RAPORU.pdf`) |
 | `npm run icons` | PWA ikonlarını üret |
 | `npm run fonts` | Yazı tiplerini yerelleştir |
 
 ## Test ve Kalite Kontrol
 
-Proje, 14 test dosyasında toplam **184 birim testiyle** kapsanmaktadır (Vitest, Node ortamı) — puanlama algoritmaları, sınıflandırma (Jenks/kantil), sensör füzyonu, benchmark istatistikleri, mekânsal analiz çekirdekleri ve katman fabrikaları gibi saf/hesaplama mantığı hedeflenir:
+Proje, 19 test dosyasında toplam **241 birim testiyle** kapsanmaktadır (Vitest, Node ortamı) — puanlama algoritmaları, sınıflandırma (Jenks/kantil), sensör füzyonu, benchmark istatistikleri, mekânsal analiz çekirdekleri, imar satır hazırlama/geometri doğrulama, nüfus yoğunluğu, mahalle karşılaştırma mantığı ve katman fabrikaları gibi saf/hesaplama mantığı hedeflenir. Harita etiketleri ayrıca MapLibre'nin gerçek stil şemasıyla derlenip değerlendirilir — haritada çıkacak metnin birebir aynısı test edilir:
 
 ```bash
 npm run test
@@ -222,8 +228,8 @@ Uygulama `vite-plugin-pwa` ve Workbox ile tam bir İlerici Web Uygulamasıdır: 
 
 Uygulama, **kayıt (registry) tabanlı** bir mimariyle her biri kendi erişim düzeyini (`public`/`personel`) bildiren modüllerden oluşur:
 
-- **33 katman** — 5'i (`imar-lekesi`, `imar-uygulama-alani`, `numarataj`, `yol-rayic`, `zemin-etut`) yalnızca personel girişiyle görünür; geri kalanı kamuya açıktır.
-- **15 araç** — yalnızca "Veri içe aktar" personel girişi gerektirir.
+- **35 katman** — 6'sı (`imar-lekesi`, `imar-tesisi`, `imar-uygulama-alani`, `numarataj`, `yol-rayic`, `zemin-etut`) yalnızca personel girişiyle görünür; geri kalanı kamuya açıktır.
+- **17 araç** — "Veri içe aktar", "İmar planı düzenle" ve "Mahalle bilgileri" personel girişi gerektirir.
 - **7 analiz** — 3'ü (imar uyumsuzluğu, kazı çakışması, beyan dışı alan) yalnızca personel girişiyle çalıştırılabilir.
 
 Tam envanter tabloları (her katman/araç/analizin veri kaynağı, erişim düzeyi ve amacı) için [docs/API_VE_MIMARI.md](docs/API_VE_MIMARI.md); kullanıcı gözünden adım adım kullanım için [docs/KULLANIM_KILAVUZU.md](docs/KULLANIM_KILAVUZU.md) ve [docs/KULLANIM_SENARYOSU.md](docs/KULLANIM_SENARYOSU.md) belgelerine bakınız.

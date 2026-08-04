@@ -78,7 +78,7 @@ src/
 │                     # harita durumu (URL hash), depolama (IndexedDB), arazi/terrain matematiği
 ├── data/             # DEM/yükselti, arama indeksi, OSM anlık görüntüsü, geliştirme demo verisi
 ├── guide/            # "/rehber" mahalle karnesi sayfası + puanlama algoritması + PDF
-├── layers/           # 33 harita katmanı tanımı + üretici (factory) fonksiyonlar
+├── layers/           # 35 harita katmanı tanımı + üretici (factory) fonksiyonlar
 ├── lib/              # Supabase istemci kurulumu
 ├── map/               # MapLibre sarmalayıcıları: Provider, hook'lar, overlay yönetimi
 ├── panels/            # Sol rayda görünen paneller (katman, araç, analiz, arama, vb.)
@@ -87,7 +87,7 @@ src/
 ├── sensors/           # GNSS/pusula/ivmeölçer okuma + sensör füzyonu matematiği
 ├── store/             # Tek Zustand store (appStore.ts)
 ├── theming/           # Koroplet (tematik) harita, sınıflandırma algoritmaları, tasarım tokenları
-├── tools/             # 15 interaktif harita aracı + kayıt (registry)
+├── tools/             # 17 interaktif harita aracı + kayıt (registry)
 ├── App.tsx            # Ana CBS tezgâhı bileşeni
 └── main.tsx            # Uygulama girişi: kayıtlar, oturum, sağlayıcılar, yönlendirme
 
@@ -119,8 +119,8 @@ flowchart TB
     end
 
     subgraph Registries["Kayıt Katmanı (src/core/*Registry.ts + src/tools/registry.ts)"]
-        LayerReg["layerRegistry — 33 katman"]
-        ToolReg["tools/registry — 15 araç"]
+        LayerReg["layerRegistry — 35 katman"]
+        ToolReg["tools/registry — 17 araç"]
         AnalysisReg["analysisRegistry — 7 analiz"]
     end
 
@@ -244,13 +244,14 @@ Katmanların çoğu, tekrarlanan MapLibre boyama kodunu yazmak yerine üç jener
 
 `supabaseLayer`, `devMode` açıkken Supabase yerine `data/devDemoData.ts`'teki demo geometriyi gösterir; Supabase yapılandırılmamışsa veya tablo boşsa, her spec'in kendi `bosMesaj` (boş-durum mesajı) metnini bildirim olarak gösterir — sessiz başarısızlık yoktur. `toGeometry()` PostGIS'in hex-WKB döndürdüğü (yanlış yapılandırma) durumları tespit edip o satırları çizmeden sayar.
 
-### 9.3 Katman envanteri (33 katman)
+### 9.3 Katman envanteri (35 katman)
 
 | Grup | id | Başlık | Erişim | Veri kaynağı |
 |---|---|---|---|---|
 | altlik | `calisma-alani-maske` | Çalışma alanı dışı maskesi | public | Statik GeoJSON |
 | altlik | `ilce-maske` | İlçe dışı maskesi | public | Statik GeoJSON |
 | altlik | `komsu-ilceler` | Komşu ilçeler | public | Statik GeoJSON |
+| altlik | `mahalle-sinir` | Mahalle sınırları (ad etiketli) | public | Statik GeoJSON (`mahalle.geojson`) |
 | altlik | `ilce-sinir` | İlçe sınırı | public | Statik GeoJSON (Nominatim R1766093) |
 | topografya | `hipsometrik` | Hipsometrik yükselti | public | DEM türevi (raster) |
 | topografya | `egim` | Eğim sınıfları | public | DEM türevi (raster) |
@@ -270,13 +271,30 @@ Katmanların çoğu, tekrarlanan MapLibre boyama kodunu yazmak yerine üç jener
 | altyapi | `zemin-etut` | Zemin etüd çalışmaları | **personel** | Supabase `zemin_etut` |
 | mulkiyet | `arazi-kullanimi` | Arazi kullanımı (imar planı değildir) | public | OSM anlık görüntüsü |
 | mulkiyet | `imar-lekesi` | İmar planı (lekeler) | **personel** | Supabase `imar_lekesi` |
+| mulkiyet | `imar-tesisi` | İmar tesisleri (leke içi) | **personel** | Supabase `imar_tesisi` |
 | mulkiyet | `imar-uygulama-alani` | İmar uygulama alanları | **personel** | Supabase `imar_uygulama_alani` |
 | mulkiyet | `numarataj` | Numarataj (adres noktaları) | **personel** | Supabase `adres` |
 | mulkiyet | `yol-rayic` | Yol rayiç değerleri | **personel** | Supabase `yol_rayic` |
 | mulkiyet | `askidaki-imar-plani` | Askıdaki imar planları | public | Supabase `imar_lekesi` ⋈ `imar_plani` (yalnızca `durum='askida'`) |
 | risk | `toplanma-alani` | Afet acil toplanma alanları | public | Supabase `toplanma_alani` |
 
-**Erişim özeti**: 33 katmandan yalnızca **5'i** (`imar-lekesi`, `imar-uygulama-alani`, `numarataj`, `yol-rayic`, `zemin-etut`) personel-kilitlidir — hepsi kadastro/imar/adres/değerleme gibi hassas mülkiyet verisi. Afet/toplanma, devam eden kamu işleri (`projeler`, `fen-isleri`) ve askıya çıkmış imar planları bilinçli olarak kamuya açıktır.
+**Erişim özeti**: 35 katmandan yalnızca **6'sı** (`imar-lekesi`, `imar-tesisi`, `imar-uygulama-alani`, `numarataj`, `yol-rayic`, `zemin-etut`) personel-kilitlidir — hepsi kadastro/imar/adres/değerleme gibi hassas mülkiyet verisi. Afet/toplanma, devam eden kamu işleri (`projeler`, `fen-isleri`) ve askıya çıkmış imar planları bilinçli olarak kamuya açıktır.
+
+#### Harita etiketleri (`SupabaseLayerSpec.label`)
+
+`labelField` tek bir sütunu yazar. Zengin künye için `label.text` alanına doğrudan bir **MapLibre ifadesi** verilir; imar katmanları bunu kullanır ve künye çizimin üstünde okunur:
+
+```
+İmar lekesi                       İmar tesisi
+─────────────                     ────────────
+Dini tesis                        Merkez Camii
+Ada/Parsel 1520/7                 Cami · 1200 m² · 750 kişi
+E:0.5 · T:0.25 · Hmax:24.5 · 2 kat    Planlanan · 2027
+```
+
+İfade parçaları `core/imar.ts` içinde üretilir: `etiketIfadesi()` slug'ı (`dini-tesis`) insan okunur etikete çevirir, `sayiEki`/`tamSayiEki`/`metinEki` ise **boş alanı satırdan tamamen düşürür** — aksi halde " · m²" gibi yarım parçalar görünürdü. `shape: 'fill'` olan katmanlarda etiket poligonun ortasına, nokta/çizgi katmanlarında simgenin altına oturur. `label.allowOverlap` açıkken etiket altlık yazılarıyla çakışsa da gizlenmez (plan bilgisi kaybolmamalı); yoğun nokta katmanları bu bayrağı kullanmaz.
+
+Etiket ifadeleri `src/layers/imarLabels.test.ts` içinde MapLibre'nin **gerçek stil şemasıyla derlenip değerlendirilir** — haritada çıkacak metnin birebir aynısı test edilir, bozuk ifade CI'da yakalanır.
 
 ## 10. Araç Sistemi (Tools)
 
@@ -292,7 +310,7 @@ interface ToolModule {
 
 `src/tools/registry.ts` aynı desendedir (`registerTool`, `listTools(role)`). İkonlar kasıtlı olarak `ToolModule`'da **değil**, `ToolDock.tsx` içindeki yerel `ICONS` haritasında tutulur — "araç modüllerinin bir UI bağımlılığına ihtiyacı olmasın" yorumuyla. `ToolDock`, o an yalnızca **tek bir** aracın panelini monte eder; araç değiştiğinde önceki panelin `useEffect` temizleme (cleanup) mantığı (çizim oturumunu yok etme, harita event handler'larını sökme) devreye girer.
 
-### 10.2 Araç envanteri (15 araç)
+### 10.2 Araç envanteri (17 araç)
 
 | id | Başlık | Erişim | Ne yapar | Ana bağımlılıklar |
 |---|---|---|---|---|
@@ -307,12 +325,22 @@ interface ToolModule {
 | `numarataj` | Numarataj (Numbering) | public | 20 haneli MAKS-UAVT adres kodu üretir/doğrular (haritasız, saf mantık) | `analysis/core/uavt.ts` |
 | `panorama` | Panorama | public | Mapillary sokak görünümü kapsama katmanı + gömülü görüntü modalı | Mapillary vektör döşemeleri (`VITE_MAPILLARY_TOKEN` gerektirir) |
 | `calisma-alani` | Çalışma alanı (Workspace) | public | Görünüm+katman+taslak durumunu adlandırıp yerel olarak kaydet/geri yükle | `core/workspace.ts`, `core/storage.ts` (IndexedDB) |
-| `veri-ice-aktar` | Veri içe aktar (Import) | **personel** | GeoJSON dosyasını 7 Supabase tablosundan birine toplu yükler | `lib/supabase.ts` |
+| `imar-duzenle` | İmar planı düzenle | **personel** | Plan aç/seç/sil → imar lekesi çiz veya köşe koordinatlarını elle gir → lekenin içine tesis (cami, okul, park…) ekle. Üç seviyede de tam CRUD | `core/imar.ts`, `data/imarRepo.ts`, `map/draw.ts` |
+| `mahalle-bilgi` | Mahalle bilgileri | **personel** | Mahalle nüfus/hane/veri yılı/kaynak girer; yoğunluk ve sınıf anında hesaplanır | `core/nufus.ts`, `lib/supabase.ts` |
+| `veri-ice-aktar` | Veri içe aktar (Import) | **personel** | GeoJSON dosyasını 9 Supabase tablosundan birine toplu yükler (`mahalle` hedefi upsert) | `lib/supabase.ts`, `core/imar.ts` (EWKT) |
 | `saha` | Saha modu (Field) | public | Canlı GNSS/pusula/ivmeölçer okuma, iz kaydı, sentetik tekrar oynatma modu | `sensors/fusion.ts`, `sensors/source.ts` |
 | `basarim` | Başarım testi (Benchmark) | public | Cihaz CPU/GPU/depolama performansını ölçer, Excel/JSON dışa aktarır | `src/bench/*` |
 | `yazdir` | Yazdır (Print) | public | Mevcut görünümü başlık/ölçek çubuğu/kuzey oku ile A4 PDF olarak dışa aktarır | `jspdf`, `tools/print.ts` |
 
-Yalnızca **Veri içe aktar** registry seviyesinde `personel` kilitlidir; ayrıca panel içinde de rol/backend kontrolü tekrarlar (savunma derinliği).
+**Veri içe aktar**, **İmar planı düzenle** ve **Mahalle bilgileri** registry seviyesinde `personel` kilitlidir; üçü de panel içinde rol ve backend kontrolünü tekrarlar (savunma derinliği), asıl yetkilendirme sınırı ise RLS'tir.
+
+#### Geometri yazımı — EWKT
+
+Yazma yolundaki tüm geometriler `core/imar.ts:toEwkt()` ile `SRID=4326;…` metnine çevrilir. Sebep: PostgREST gövdesindeki JSON, geometri sütununa PostGIS `geometry_in` fonksiyonuyla yazılır ve bu fonksiyon **GeoJSON nesnesi kabul etmez**, EWKT'yi ise her sürümde kabul eder. `imar_lekesi` ve `imar_uygulama_alani` sütunları `geometry(MultiPolygon,…)` olduğundan çizilen `Polygon` yazılmadan önce `toMultiPolygon()` ile sarmalanır. Bozuk koordinat (`NaN`, eksik eksen) `null` döndürür ve kayıt sessizce yarım yazılmak yerine atlanır.
+
+#### Çizim oturumu — koordinat girişi
+
+`map/draw.ts` oturumu `setVertices(pairs, finished?)` / `getVertices()` ile dışarıdan sürülebilir; `onChange` geri çağrısının ikinci parametresi köşe dizisidir. İmar aracındaki koordinat tablosu ([`tools/imar/VertexTable.tsx`](../src/tools/imar/VertexTable.tsx)) bu API üzerinden haritayla **çift yönlü** çalışır: haritada çizilen köşe tabloya düşer, tabloda yazılan koordinat haritayı günceller. Kayıtlı bir geometriyi düzenlemeye almak da aynı yoldan yapılır. Toplu yapıştırma `core/coords.ts:parseCoordinate` ile hem ondalık derece hem DMS satırlarını okur.
 
 ## 11. Analiz Sistemi (Analysis)
 
@@ -375,13 +403,14 @@ Mimari desen: **`analysis/core/X.ts`** (saf, test edilebilir algoritma — turf/
 
 | Tablo | Anahtar sütunlar | Amaç |
 |---|---|---|
-| `mahalle` | PK `uavt_kod`, `geom MultiPolygon`, `nufus`, `hane`, `alan_km2`, `yaklasik` | Mahalle sınırları (yaklaşık Voronoi kaynaklı) |
+| `mahalle` | PK `uavt_kod`, `geom MultiPolygon`, `nufus`, `hane`, `alan_km2`, `veri_yili`, `nufus_kaynak`, `yaklasik` | Mahalle sınırları (yaklaşık Voronoi kaynaklı) + nüfus künyesi |
 | `deprem_senaryo` | PK=FK `mahalle_uavt`, hasar/ölüm/yaralı/barınma sayıları | İBB deprem senaryosu, mahalle başına |
 | `parsel` | `mahalle_uavt`, `ada`/`parsel`, `geom`, `nitelik`, `alan_m2` | Kadastro parselleri |
 | `bina` | `parsel_id`, `mahalle_uavt`, `geom`, `kat`, `alan_m2`, `uavt_bina_kod` | Binalar |
 | `adres` | `bina_id`, `mahalle_uavt`, `csbm`, `kapi_no` | Adresler (UAVT) |
 | `imar_plani` | `ad`, `olcek`, `onay_tarihi`, `aski_baslangic/bitis`, `durum` | İmar planları (taslak/askıda/yürürlükte/iptal) |
-| `imar_lekesi` | `plan_id`, `geom`, `fonksiyon`, `taks`/`kaks`, `hmax` | İmar plan lekeleri |
+| `imar_lekesi` | `plan_id`, `geom MultiPolygon`, `fonksiyon`, `taks`/`kaks`, `hmax`, `kat_adedi`, `yapi_nizami`, `ada`/`parsel`, `plan_notu` | İmar plan lekeleri (plan paftasındaki tam künye) |
+| `imar_tesisi` | `leke_id` (→ `imar_lekesi`, cascade), `geom Polygon`, `tur`, `ad`, `alan_m2`, `kapasite`, `durum`, `yil`, `aciklama` | Lekenin **içindeki** tesis: cami, okul, park, otopark… `durum` ∈ mevcut/yapim_asamasinda/planlanan/iptal; `yil` duruma göre yapım ya da hedef yılı |
 | `kazi_ruhsat` | `geom LineString`, `kurum`, `baslangic`/`bitis`, `durum` | Kazı ruhsatları |
 | `beyan` | `bina_id`, `beyan_alan_m2`, `beyan_tarihi`, `mukellef_no` | Bina beyanları (vergi) |
 | `toplanma_alani` | `mahalle_uavt`, `geom`, `kapasite_kisi`, `alan_m2` | Acil toplanma alanları (AFAD) |
@@ -399,7 +428,7 @@ Mimari desen: **`analysis/core/X.ts`** (saf, test edilebilir algoritma — turf/
 Üç SQL fonksiyonu JWT `app_metadata.rol` alanını okuyup rol kontrolü yapar: `rol()`, `personel_mi()`, `yonetici_mi()`. Politika deseni:
 
 - **Kamuya açık tablolar** (`mahalle`, `deprem_senaryo`, `toplanma_alani`, `acil_ulasim_yolu`, `proje`): `anon`+`authenticated` için `select (true)`.
-- **Yalnızca personel okuyabilir** (`parsel`, `bina`, `adres`, `imar_lekesi`, `kazi_ruhsat`, `beyan`, `ek_dosya`, `zemin_etut`, `yol_rayic`, `imar_uygulama_alani`): `select` yalnızca `personel_mi()`.
+- **Yalnızca personel okuyabilir** (`parsel`, `bina`, `adres`, `imar_lekesi`, `imar_tesisi`, `kazi_ruhsat`, `beyan`, `ek_dosya`, `zemin_etut`, `yol_rayic`, `imar_uygulama_alani`): `select` yalnızca `personel_mi()`.
 - **Yazma her zaman personel+**: neredeyse her iş tablosunda `for all` politikası `personel_mi()` gerektirir.
 - **`imar_plani`** (özel): personel her zaman okuyabilir; ziyaretçi yalnızca `durum in ('askida','yururlukte')` VE bugünün tarihi `aski_baslangic`/`aski_bitis` aralığındaysa okuyabilir — taslak planlar veya askı süresi dışındaki planlar görünmez.
 - **`analiz_calismasi`** (özel): sahiplik tabanlı — `herkese_acik` veya `sahip = auth.uid()` ise okunur; yazma yalnızca sahibine açık.
@@ -436,6 +465,9 @@ Rol ataması **tamamen sunucu taraflıdır**: `session.user.app_metadata.rol` (v
 | 07 | `07-komsu-ilceler.ts` | Overpass + Nominatim | `ilceler.geojson`, `calisma-alani.geojson` | 01 |
 | 08 | `08-iett-durak.ts` | İBB CKAN (İETT durakları) — opsiyonel, OSM'ye düşer | `otobus-duragi.geojson` | 06 (yedek) |
 | 09 | `09-toplanma-alani.ts` | İBB CKAN (AFAD toplanma alanları) | `toplanma-alani.geojson` | 01 |
+| 10 | `10-mahalle-nufus.ts` | Türetilmiş (TÜİK ilçe nüfusu ⋈ OSM bina taban alanı) | `mahalle-nufus.json` | 03, 06 |
+
+> **10. adım bir tahmindir, ölçüm değildir.** Mahalle bazlı nüfus açık veride yayımlanmıyor: TÜİK ADNKS'nin API'si yok, İBB açık verisindeki nüfus setlerinin tamamı ilçe kırılımlı (arama sonucu: "Nüfus Bilgileri", "Belediye Nüfusları", 40+ VDYM seti — hepsi ilçe). Bu yüzden ilçe toplamı, mahallelerin OSM bina taban alanı payına göre dağıtılır. Konut dışı 14 yapı tipi (hangar, sera, depo, sanayi…) hariç tutulur, tek binanın katkısı 2.000 m² ile sınırlanır, apartman ×4 / konut ×1 kat çarpanı uygulanır — aksi halde havalimanı çevresindeki tek bir hangar kırsal mahalleyi ilçenin en kalabalık yeri gibi gösteriyordu. Üretilen her kayıt `tahmini: true` taşır ve arayüzde bu şekilde etiketlenir.
 
 Her betik `recordDataset()` ile paylaşılan `public/data/manifest.json`'a kayıt/boyut bilgisi yazar; `src/config/sources.ts`'teki `DATASETS` bu dosya yollarını çalışma zamanı kodunun (`core/dataset.loadDataset`) kullanacağı mantıksal anahtarlara eşler. `--fresh` bayrağı ham HTTP önbelleğini atlar.
 
@@ -445,7 +477,14 @@ Her betik `recordDataset()` ile paylaşılan `public/data/manifest.json`'a kayı
 
 - **Puanlama** (`guide/guideScore.ts`): dört alt puan — Deprem, Erişim, Hizmet, Altyapı (her biri 0–100, `tersPuan`/`duzPuan` ile iyi/kötü eşiklerinden lineer enterpolasyon) — ortalanarak `genelPuan` elde edilir. 38 mahalle arasında `siralama` (sıralama) hesaplanır.
 - **Veri**: `theming/mahalleData.ts` (mahalle ⋈ deprem senaryosu), OSM anlık görüntüsü (`hizmet`/`poi` temaları), İBB sağlık kurumları veri seti.
-- **Çıktı**: seçilebilir mahalle listesi, antet kimlik bloğu, "taşınmadan önce" kontrol listesi (eşik aşımına göre otomatik uyarılar), 4 bölüm kartı, haritada aç bağlantısı (`encodeMapState` ile derin bağlantı), `karnePdf.exportKarnePdf()` ile tek sayfalık PDF indirme.
+- **Nüfus ve alan** (`core/nufus.ts` + `data/mahalleNufus.ts`): nüfus, yüzölçümü, yoğunluk (kişi/km²), hane sayısı, hane başına kişi. Yoğunluk beş mutlak kademeye ayrılır — `Kırsal` (<250) · `Seyrek` (250–1.500) · `Orta` (1.500–5.000) · `Yoğun` (5.000–12.000) · `Çok yoğun` (≥12.000) — ve ayrıca ilçe ortalamasına oranlanır ("ilçe ortalamasının 6,3 katı"). Mutlak sınıf tek başına yanıltıcı olurdu (Arnavutköy geneli zaten seyrek), ikisi birlikte anlamlıdır.
+  **Bu bölüm bilerek puanlanmaz** ve `genelPuan`'a girmez: yüksek yoğunluk objektif olarak iyi ya da kötü değildir (hizmete erişimi artırır, kişi başına açık alanı azaltır). `karsilastirma.ts` içinde `nufus` grubunun tüm metrikleri `yon: 'notr'` taşır; bir test bu kuralı kilitler.
+  Veri kaynağı iki katmanlıdır: yerel seed dosyası taban, Supabase `mahalle` kaydı üstündür. Bir mahalleye gerçek nüfus girildiği anda o mahallede tahmin devre dışı kalır.
+- **Karşılaştırma** (`karsilastirma.ts` + `SiralamaTablosu.tsx` + `KarsilastirmaTablosu.tsx`): 22 metrik altı grupta (Genel, Nüfus ve alan, Deprem, Erişim, Hizmetler, Altyapı) tanımlıdır; her metriğin bir **yönü** vardır (`yuksek-iyi` / `dusuk-iyi` / `notr`).
+  - *Sıralama tablosu*: 38 mahalle tek tabloda, altı sütunun herhangi birine göre sıralanabilir, mini çubuklarla. Yönlü metrikte ilk tıklama doğru yöne açılır (mesafede küçükten büyüğe). **Değeri olmayan mahalle asla en iyi sayılmaz, sona düşer.**
+  - *Yan yana karne*: en fazla 3 mahalle sütun sütun; yönlü göstergelerde en iyi değer ▲ ile işaretlenir, berabere kalanların hepsi vurgulanır, hepsi eşitse vurgulama yapılmaz (bilgi taşımaz). Açılışta en yoğun ve en seyrek mahalle otomatik karşılaştırmaya gelir.
+- **Çıktı**: seçilebilir mahalle listesi, antet kimlik bloğu, "taşınmadan önce" kontrol listesi (eşik aşımına göre otomatik uyarılar), 5 bölüm kartı, sıralama + karşılaştırma bölümü, haritada aç bağlantısı (`encodeMapState` ile derin bağlantı), `karnePdf.exportKarnePdf()` ile tek sayfalık PDF indirme.
+- Nüfus tahmini içeren bir karne varsa sayfanın en üstünde, göz ardı edilemeyecek bir uyarı kutusu gösterilir: nüfusun neden türetildiğini, nerede saptığını (sanayi/havalimanı çevresi) ve hangi göstergelerin bundan **etkilenmediğini** (deprem, erişim, hizmet, altyapı) açıkça yazar.
 - Backend/veri seti eksikse hata yerine "yöneticiye `npm run data:build` çalıştırması" mesajı gösterir.
 
 ## 17. Tema ve Görselleştirme
@@ -470,7 +509,8 @@ Her betik `recordDataset()` ile paylaşılan `public/data/manifest.json`'a kayı
 ## 21. Build, Test ve CI/CD
 
 - **Derleme** (`vite.config.ts`): `optimizeDeps.exclude: ['maplibre-gl']`, ES2022 hedef, `rolldownOptions` ile `maplibre-gl`/`@turf/turf`/Mantine/React için ayrı, önbelleklenebilir chunk'lar. Geliştirme sunucusunda `/proxy/afad` ve `/proxy/overpass` CORS proxy'leri tanımlıdır (yalnızca `vite dev`; üretimde eşdeğer bir sunucu tarafı proxy gerekir).
-- **Test** (`vitest.config.ts`): Node ortamı (jsdom yok — tüm testler saf/hesaplama fonksiyonları üzerinedir: puanlama, sınıflandırma, sensör füzyonu, bench istatistikleri, analiz çekirdekleri). Bu belgenin yazıldığı anda **184 test, 14 dosyada, tümü geçiyor**.
+- **Test** (`vitest.config.ts`): Node ortamı (jsdom yok — tüm testler saf/hesaplama fonksiyonları üzerinedir: puanlama, sınıflandırma, sensör füzyonu, bench istatistikleri, analiz çekirdekleri, imar satır hazırlama, nüfus yoğunluğu, karşılaştırma mantığı). `window`'a bağlanan çizim oturumu için testte asgari bir kabuk tanımlanır. Bu belgenin yazıldığı anda **241 test, 19 dosyada, tümü geçiyor**.
+- **Etiket testleri**: `layers/imarLabels.test.ts`, MapLibre etiket ifadelerini `@maplibre/maplibre-gl-style-spec` ile gerçek stil şeması üzerinden derleyip değerlendirir — haritada görünecek metnin birebir aynısı doğrulanır. Bozuk ifade ya da yarım ek çalışma zamanında değil, CI'da yakalanır.
 - **CI** (`.github/workflows/ci.yml`): `main`'e push/PR'da sırasıyla `npm ci` → `npm run typecheck` → `npm run test` → `npm run build`.
 - **TypeScript**: `strict`, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `noUnusedLocals/Parameters`, `verbatimModuleSyntax`.
 
@@ -482,6 +522,16 @@ Her betik `recordDataset()` ile paylaşılan `public/data/manifest.json`'a kayı
 | `VITE_SUPABASE_ANON_KEY` | Hayır (ikisi birlikte) | Supabase anon genel anahtarı |
 | `VITE_MAPILLARY_TOKEN` | Hayır | Panorama aracı için Mapillary erişim jetonu — yoksa araç bilgilendirici bir uyarı gösterip devre dışı kalır |
 | `VITE_ORS_API_KEY` | Hayır | Rezerve edilmiş (rota/yönlendirme servisi için) — bu taramada hiçbir dosyada tüketildiği görülmedi |
+| `SUPABASE_SERVICE_ROLE_KEY` | Yalnızca `npm run admin:create` için | Yönetici/personel hesabı açan betiğin kullandığı gizli anahtar. `VITE_` öneki **taşımaz**, bu yüzden tarayıcı paketine sızmaz. Rol JWT'de `app_metadata.rol` olarak taşınır ve bu alanı yalnızca service_role yazabilir — anon anahtarla açılan hesap `public` rolünde kalır. `.env` zaten `.gitignore`'dadır. |
+
+### Yönetici hesabı açma
+
+```bash
+# .env'e SUPABASE_SERVICE_ROLE_KEY=... ekleyin (Supabase panosu → Project Settings → API → service_role)
+npm run admin:create -- --email=ad@kurum.gov.tr --password="en-az-12-karakter" --rol=yonetici
+```
+
+`scripts/create-admin.ts` tekrar çalıştırılabilir: hesap varsa parolasını ve rolünü günceller, yoksa oluşturur. `--rol` yalnızca `personel` veya `yonetici` alır.
 
 ## 23. Genişletme Rehberleri
 
@@ -505,3 +555,8 @@ Her üç durumda da `registerLayer`/`registerTool`/`registerAnalysis`, aynı id 
 - `analysis/core/uavt.ts`, 7 analizden biri **değildir** — Numarataj aracıyla paylaşılan bir adresleme yardımcı modülüdür; dokümantasyon/rapor sayımlarında 8. analiz olarak karıştırılmamalıdır.
 - Üretim ortamında `/proxy/afad` ve `/proxy/overpass` için `vite dev`'deki proxy'ye eşdeğer bir sunucu tarafı çözüm gerekir (Vercel/Netlify yönlendirme kuralı veya ayrı bir fonksiyon) — bu depoda üretime özel bir proxy implementasyonu bulunmamaktadır.
 - `VITE_ORS_API_KEY` ortam değişkeni tanımlı ama kod tabanında hiçbir yerde tüketilmiyor — muhtemelen planlanan ama henüz uygulanmamış bir rotalama özelliği için ayrılmış.
+- **Mahalle nüfusu tahminidir.** Mahalle bazlı gerçek nüfus açık veride yayımlanmadığı için `mahalle-nufus.json` türetilmiş bir seed'dir (bkz. [§15](#15-veri-alım-hattı-ingest-pipeline)). OSM bina kapsamı ilçe genelinde eşit değildir ve taban alanı nüfus için zayıf bir vekildir; havalimanı ve sanayi çevresindeki mahallelerde belirgin sapma vardır. Gerçek TÜİK verisi **Mahalle bilgileri** aracıyla ya da **Veri içe aktar** ile girilene kadar karne sayfası bu durumu üst sırada uyarı olarak gösterir. Deprem, erişim, hizmet ve altyapı puanları bu tahminden etkilenmez.
+- Mahalle sınırları Voronoi türevi olduğundan yüzölçümü ve dolayısıyla yoğunluk da yaklaşıktır; `mahalle-sinir` katmanı resmî olmayan sınırları kesikli çizgiyle ayırır.
+- İmar tesisi geometrisi yalnızca `Polygon`'dur (nokta desteklenmez) — "şu kadar alan alacak" ifadesi alan gerektirir ve `alan_m2` geometriden hesaplanabilir. Nokta gerekirse sütun `geometry(Geometry,4326)`'ya genişletilmelidir.
+- Tesis üst lekenin dışına taşarsa uyarıyla kaydedilir, **tamamen** dışarıdaysa reddedilir. MultiPolygon leke parçalarına ayrılıp tek tek denenir; turf'ün `booleanWithin`'i kapsayıcı olarak MultiPolygon'u güvenilir biçimde ele almıyor.
+- Yazma sonrası katman tazeleme (`appStore.dataVersion`) tüm kurumsal katmanları söküp yeniden kurar. Tek seferlik bir işlem olduğu için kabul edilebilir; katman başına seçici tazeleme henüz yok.
